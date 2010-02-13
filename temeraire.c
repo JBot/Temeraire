@@ -1242,18 +1242,22 @@ char Serout[260]={0}, temp[10]={0};
 
 read_flag = read(ser_fd_modem, my_input, 1);;
 
-	if( read_flag != 0 ) {
+	if( (read_flag != 0) || (my_input[0] != 0) ) {
 		
 		if(read_flag == -1){
 			printf("Reading error.");
 		}
 		else {
 			switch(my_input[0]) {
-				case '1' : break;
+				case '8' : 
+					TravelLengthZ -= 10;
+					break;
+				case '2' : 
+                                        TravelLengthZ += 10;
+                                        break;
 				default : break;
 			}
 			printf("Char received = %x",my_input[0]);
-			TravelLengthZ -= 10;
 		}
 
 	}		
