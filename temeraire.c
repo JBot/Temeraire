@@ -13,7 +13,7 @@
 // Declare your global variables here
 
 #define SSCDEVICE "/dev/ttyS0"
-#define MODEMDEVICE "/dev/ttyS2"
+#define MODEMDEVICE "/dev/rfcomm0"
 #define BAUDRATE B115200
 
 #define False 0
@@ -1234,7 +1234,39 @@ void FreeServos()
 
 
 
+void getInput(void) {
 
+char my_input[50];
+char read_flag;
+char Serout[260]={0}, temp[10]={0};
+
+read_flag = read(ser_fd_modem, my_input, 1);;
+
+	if( read_flag != 0 ) {
+		
+		if(read_flag == -1){
+			printf("Reading error.");
+		}
+		else {
+			switch(my_input[0]) {
+				case '1' : break;
+				default : break;
+			}
+			printf("Char received = %x",my_input[0]);
+			TravelLengthZ -= 10;
+		}
+
+	}		
+
+    sprintf(Serout, "Q\r");
+
+    // write to serial if connected
+    if ( ser_fd_ssc )
+        write(ser_fd_ssc, &Serout, sizeof(Serout));
+
+
+
+}
 
 
 
@@ -1276,6 +1308,9 @@ if( ser_fd_ssc == -1)
 
         memset(&newtio_ssc, 0, sizeof(newtio_ssc));
         tcgetattr(ser_fd_ssc, &newtio_ssc);
+
+	fcntl(ser_fd_ssc, F_SETFL, FNDELAY);
+
     }
 
 
@@ -1288,7 +1323,7 @@ if( ser_fd_ssc == -1)
 // USART1 Mode: Asynchronous
 // USART1 Baud rate: 115200
 
-/*
+
 ser_fd_modem = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 if( ser_fd_modem == -1)
@@ -1298,7 +1333,8 @@ if( ser_fd_modem == -1)
     else
     {
         printf( " MODEM Serial Open \n" );
-        tcgetattr(ser_fd_modem, &oldtio_modem);                             // Backup old port settings
+        fcntl(ser_fd_modem, F_SETFL, FNDELAY);
+	tcgetattr(ser_fd_modem, &oldtio_modem);                             // Backup old port settings
         memset(&newtio_modem, 0, sizeof(newtio_modem));
 
         newtio_modem.c_iflag = IGNBRK | IGNPAR;
@@ -1311,9 +1347,11 @@ if( ser_fd_modem == -1)
 
         memset(&newtio_modem, 0, sizeof(newtio_modem));
         tcgetattr(ser_fd_modem, &newtio_modem);
+    
+	fcntl(ser_fd_modem, F_SETFL, FNDELAY);
     }
 
-*/
+
 
 
 // Global enable interrupts
@@ -1380,7 +1418,7 @@ while (1)
   //GOSUB RCInput1
   
   
-  //getInput();
+  getInput();
   
   /*armWrite();*/                
  
@@ -1477,11 +1515,10 @@ while (1)
    }
 */ 
 
-   usleep(200000);
+   usleep(NomGaitSpeed*1000);
 
    ServoDriver();
    
-   sleep(1);   
       
       };
 }
