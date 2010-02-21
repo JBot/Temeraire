@@ -1400,7 +1400,7 @@ read_flag = read(ser_fd_modem, my_input, 1);;
 
 }
 
-
+/*
 //--------------------------------------------------------------------
 // [BalCalcOneLeg]
 void BalCalcOneLeg (double PosX, double PosZ, double PosY, int offsetX, int offsetZ)
@@ -1440,8 +1440,69 @@ void BalanceBody()
     TotalZBal =  TotalZBal / 8;
 	printf("Balance X = %f, Y = %f, Z = %f \n",TotalXBal, TotalYBal, TotalZBal);
 }
+*/
 
 
+//;--------------------------------------------------------------------
+//;[BalCalcOneLeg]
+void BalCalcOneLeg(double my_PosX, double my_PosZ,double my_PosY,int my_BodyOffsetX, int my_BodyOffsetZ) {
+  //;Calculating totals from center of the body to the feet
+  TotalZ = my_BodyOffsetZ+my_PosZ;
+  TotalX = my_BodyOffsetX+my_PosX;
+  TotalY =  100 + my_PosY; //' using the value 150 to lower the centerpoint of rotation 'BodyPosY +
+  TotalTransY = TotalTransY + my_PosY;
+  TotalTransZ = TotalTransZ + TotalZ;
+  TotalTransX = TotalTransX + TotalX;
+  GetBoogTan( TotalX, TotalZ);
+  TotalYBal = TotalYBal + (int)((BoogTan*180.0) / 3.141592);
+  GetBoogTan (TotalX, TotalY);
+  TotalZBal = TotalZBal + (int)((BoogTan*180.0) / 3.141592);
+  GetBoogTan (TotalZ, TotalY);
+  TotalXBal = TotalXBal + (int)((BoogTan*180.0) / 3.141592);
+return;
+}
+
+//;--------------------------------------------------------------------
+//;[BalanceBody]
+void BalanceBody() {
+	TotalTransZ = TotalTransZ/6;
+	TotalTransX = TotalTransX/6;
+	TotalTransY = TotalTransY/6;
+	if( TotalYBal < -180 )	//'Tangens fix caused by +/- 180 deg
+		TotalYBal = TotalYBal + 360;
+	if( TotalZBal < -180 )	//'Tangens fix caused by +/- 180 deg
+		TotalZBal = TotalZBal + 360;
+	if( TotalXBal < -180 )	//'Tangens fix caused by +/- 180 deg
+		TotalXBal = TotalXBal + 360;
+	
+	//;Balance rotation
+	TotalYBal = TotalYBal/6;
+	TotalXBal = TotalXBal/6;
+	TotalZBal = -TotalZBal/6;
+		
+	//;Balance translation
+	LFGaitPosZ = LFGaitPosZ - TotalTransZ;
+	LMGaitPosZ = LMGaitPosZ - TotalTransZ;
+	LRGaitPosZ = LRGaitPosZ - TotalTransZ;
+	RFGaitPosZ = RFGaitPosZ - TotalTransZ;
+	RMGaitPosZ = RMGaitPosZ - TotalTransZ;
+	RRGaitPosZ = RRGaitPosZ - TotalTransZ;
+	
+	LFGaitPosX = LFGaitPosX - TotalTransX;
+	LMGaitPosX = LMGaitPosX - TotalTransX;
+	LRGaitPosX = LRGaitPosX - TotalTransX;
+	RFGaitPosX = RFGaitPosX - TotalTransX;
+	RMGaitPosX = RMGaitPosX - TotalTransX;
+	RRGaitPosX = RRGaitPosX - TotalTransX ;
+	
+	LFGaitPosY = LFGaitPosY - TotalTransY;
+	LMGaitPosY = LMGaitPosY - TotalTransY;
+	LRGaitPosY = LRGaitPosY - TotalTransY;
+	RFGaitPosY = RFGaitPosY - TotalTransY;
+	RMGaitPosY = RMGaitPosY - TotalTransY;
+	RRGaitPosY = RRGaitPosY - TotalTransY;
+return;
+}
 
 
 void main(void)
@@ -1632,43 +1693,43 @@ while (1)
   doBodyRot();
   
   //Right Front leg
-  BodyIK(-RFPosX+BodyPosX+RFGaitPosX-TotalTransX, RFPosZ+BodyPosZ+RFGaitPosZ-TotalTransZ,RFPosY+BodyPosY+RFGaitPosY-TotalTransY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
-  LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX-TotalTransX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY-TotalTransY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ-TotalTransZ);   
+  BodyIK(-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFPosY+BodyPosY+RFGaitPosY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
+  LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ);   
   RFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
   RFFemurAngle = IKFemurAngle;
   RFTibiaAngle = IKTibiaAngle;
    
   //Right Middle leg
-  BodyIK(-RMPosX+BodyPosX+RMGaitPosX-TotalTransX, RMPosZ+BodyPosZ+RMGaitPosZ-TotalTransZ,RMPosY+BodyPosY+RMGaitPosY-TotalTransY, (signed int)RMOffsetX, (signed int)RMOffsetZ, (signed int)RMGaitRotY);
-  LegIK(RMPosX-BodyPosX+BodyIKPosX-RMGaitPosX-TotalTransX, RMPosY+BodyPosY-BodyIKPosY+RMGaitPosY-TotalTransY, RMPosZ+BodyPosZ-BodyIKPosZ+RMGaitPosZ-TotalTransZ);
+  BodyIK(-RMPosX+BodyPosX+RMGaitPosX, RMPosZ+BodyPosZ+RMGaitPosZ,RMPosY+BodyPosY+RMGaitPosY, (signed int)RMOffsetX, (signed int)RMOffsetZ, (signed int)RMGaitRotY);
+  LegIK(RMPosX-BodyPosX+BodyIKPosX-RMGaitPosX, RMPosY+BodyPosY-BodyIKPosY+RMGaitPosY, RMPosZ+BodyPosZ-BodyIKPosZ+RMGaitPosZ);
   RMCoxaAngle  = IKCoxaAngle;
   RMFemurAngle = IKFemurAngle;
   RMTibiaAngle = IKTibiaAngle;  
    
   //Right Rear leg
-  BodyIK(-RRPosX+BodyPosX+RRGaitPosX-TotalTransX, RRPosZ+BodyPosZ+RRGaitPosZ-TotalTransZ,RRPosY+BodyPosY+RRGaitPosY-TotalTransY, (signed int)RROffsetX, (signed int)RROffsetZ, (signed int)RRGaitRotY);
-  LegIK(RRPosX-BodyPosX+BodyIKPosX-RRGaitPosX-TotalTransX, RRPosY+BodyPosY-BodyIKPosY+RRGaitPosY-TotalTransY, RRPosZ+BodyPosZ-BodyIKPosZ+RRGaitPosZ-TotalTransZ);
+  BodyIK(-RRPosX+BodyPosX+RRGaitPosX, RRPosZ+BodyPosZ+RRGaitPosZ,RRPosY+BodyPosY+RRGaitPosY, (signed int)RROffsetX, (signed int)RROffsetZ, (signed int)RRGaitRotY);
+  LegIK(RRPosX-BodyPosX+BodyIKPosX-RRGaitPosX, RRPosY+BodyPosY-BodyIKPosY+RRGaitPosY, RRPosZ+BodyPosZ-BodyIKPosZ+RRGaitPosZ);
   RRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
   RRFemurAngle = IKFemurAngle;
   RRTibiaAngle = IKTibiaAngle;
 
   //Left Front leg
-  BodyIK(LFPosX-BodyPosX+LFGaitPosX-TotalTransX, LFPosZ+BodyPosZ+LFGaitPosZ-TotalTransZ,LFPosY+BodyPosY+LFGaitPosY-TotalTransY, (signed int)LFOffsetX, (signed int)LFOffsetZ, (signed int)LFGaitRotY);
-  LegIK(LFPosX+BodyPosX-BodyIKPosX+LFGaitPosX-TotalTransX, LFPosY+BodyPosY-BodyIKPosY+LFGaitPosY-TotalTransY, LFPosZ+BodyPosZ-BodyIKPosZ+LFGaitPosZ-TotalTransZ);
+  BodyIK(LFPosX-BodyPosX+LFGaitPosX, LFPosZ+BodyPosZ+LFGaitPosZ,LFPosY+BodyPosY+LFGaitPosY, (signed int)LFOffsetX, (signed int)LFOffsetZ, (signed int)LFGaitRotY);
+  LegIK(LFPosX+BodyPosX-BodyIKPosX+LFGaitPosX, LFPosY+BodyPosY-BodyIKPosY+LFGaitPosY, LFPosZ+BodyPosZ-BodyIKPosZ+LFGaitPosZ);
   LFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
   LFFemurAngle = IKFemurAngle;
   LFTibiaAngle = IKTibiaAngle;
 
   //Left Middle leg
-  BodyIK(LMPosX-BodyPosX+LMGaitPosX-TotalTransX, LMPosZ+BodyPosZ+LMGaitPosZ-TotalTransZ,LMPosY+BodyPosY+LMGaitPosY-TotalTransY, (signed int)LMOffsetX, (signed int)LMOffsetZ, (signed int)LMGaitRotY);
-  LegIK(LMPosX+BodyPosX-BodyIKPosX+LMGaitPosX-TotalTransX, LMPosY+BodyPosY-BodyIKPosY+LMGaitPosY-TotalTransY, LMPosZ+BodyPosZ-BodyIKPosZ+LMGaitPosZ-TotalTransZ);
+  BodyIK(LMPosX-BodyPosX+LMGaitPosX, LMPosZ+BodyPosZ+LMGaitPosZ,LMPosY+BodyPosY+LMGaitPosY, (signed int)LMOffsetX, (signed int)LMOffsetZ, (signed int)LMGaitRotY);
+  LegIK(LMPosX+BodyPosX-BodyIKPosX+LMGaitPosX, LMPosY+BodyPosY-BodyIKPosY+LMGaitPosY, LMPosZ+BodyPosZ-BodyIKPosZ+LMGaitPosZ);
   LMCoxaAngle  = IKCoxaAngle;
   LMFemurAngle = IKFemurAngle;
   LMTibiaAngle = IKTibiaAngle;
          
   //Left Rear leg
-  BodyIK(LRPosX-BodyPosX+LRGaitPosX-TotalTransX, LRPosZ+BodyPosZ+LRGaitPosZ-TotalTransZ,LRPosY+BodyPosY+LRGaitPosY-TotalTransY, (signed int)LROffsetX, (signed int)LROffsetZ, (signed int)LRGaitRotY);
-  LegIK(LRPosX+BodyPosX-BodyIKPosX+LRGaitPosX-TotalTransX, LRPosY+BodyPosY-BodyIKPosY+LRGaitPosY-TotalTransY, LRPosZ+BodyPosZ-BodyIKPosZ+LRGaitPosZ-TotalTransZ);
+  BodyIK(LRPosX-BodyPosX+LRGaitPosX, LRPosZ+BodyPosZ+LRGaitPosZ,LRPosY+BodyPosY+LRGaitPosY, (signed int)LROffsetX, (signed int)LROffsetZ, (signed int)LRGaitRotY);
+  LegIK(LRPosX+BodyPosX-BodyIKPosX+LRGaitPosX, LRPosY+BodyPosY-BodyIKPosY+LRGaitPosY, LRPosZ+BodyPosZ-BodyIKPosZ+LRGaitPosZ);
   LRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
   LRFemurAngle = IKFemurAngle;
   LRTibiaAngle = IKTibiaAngle;
