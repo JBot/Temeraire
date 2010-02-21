@@ -32,11 +32,14 @@
 
 #define SERVO_OFFSET4   107
 #define SERVO_OFFSET5   -19
-#define SERVO_OFFSET6   40
+//#define SERVO_OFFSET6   40
+#define SERVO_OFFSET6   48
 
 #define SERVO_OFFSET8   -24
-#define SERVO_OFFSET9   0
-#define SERVO_OFFSET10  0
+//#define SERVO_OFFSET9   0
+#define SERVO_OFFSET9   1
+//#define SERVO_OFFSET10  0
+#define SERVO_OFFSET10  12
     
 
 #define SERVO_OFFSET16  -40
@@ -49,7 +52,8 @@
 
 #define SERVO_OFFSET24  101
 #define SERVO_OFFSET25  48
-#define SERVO_OFFSET26  0
+//#define SERVO_OFFSET26  0
+#define SERVO_OFFSET26  -27
 
 
 //[MIN/MAX ANGLES]
@@ -337,6 +341,7 @@ signed int GaitPosZ;   //In-/Output Pos Z of feet
 signed int GaitRotY;   //In-/Output Rotation Y of feet
 
 char starting =0;
+char sleeping =1;
 char display1, display2, display3, display4;
 int entier;
 signed int headAngle;
@@ -947,6 +952,33 @@ void firstposition(void) {
 
 if(starting == 0) {
 
+/* VRAIE POSITION */
+RFPosX = 60;      //Start positions of the Right Front leg
+RFPosY = 25;
+RFPosZ = -81;
+
+RMPosX = 100;   //Start positions of the Right Middle leg
+RMPosY = 25;
+RMPosZ = 10;	
+
+RRPosX = 53;    //Start positions of the Right Rear leg
+RRPosY = 25;
+RRPosZ = 91;
+
+LFPosX = 60;      //Start positions of the Left Front leg
+LFPosY = 25;
+LFPosZ = -81;
+
+LMPosX = 100;   //Start positions of the Left Middle leg
+LMPosY = 25;
+LMPosZ = 10;
+
+LRPosX = 53;      //Start positions of the Left Rear leg
+LRPosY = 25;
+LRPosZ = 91;
+
+
+/*
 RFPosX = 60;      //Start positions of the Right Front leg
 RFPosY = 25;
 RFPosZ = -21;
@@ -970,7 +1002,10 @@ LMPosZ = 0;
 LRPosX = 53;      //Start positions of the Left Rear leg
 LRPosY = 25;
 LRPosZ = 41;
-RotPoint = 82; //(arriere du robot)
+*/
+
+// RotPoint = 82; //(arriere du robot)
+RotPoint = 0; // (center du robot)
 
 //Body Positions
 BodyPosX = 0;
@@ -1003,7 +1038,7 @@ starting++;
 }
 else if( starting == 1 ) {              
 
-BodyPosYint = 110;
+BodyPosYint = 50;
 NomGaitSpeed = 500;
 starting++;
 
@@ -1249,12 +1284,109 @@ read_flag = read(ser_fd_modem, my_input, 1);;
 		}
 		else {
 			switch(my_input[0]) {
-				case '8' : 
-					TravelLengthZ -= 10;
-					break;
-				case '2' : 
-                                        TravelLengthZ += 10;
-                                        break;
+
+			case 'v' :
+                                RotPoint = -82; //(avant du robot)
+                                break; 
+                        case 'b' :
+                                RotPoint = 0; //(milieu du robot)
+                                break;        
+                        case 'n' :
+                                RotPoint = 82; //(arriere du robot)
+                                break;
+			case 'B' :
+                                if(BalanceMode == 0){
+					BalanceMode = 1;
+					printf("Balance Mode ON  \n");
+				}
+				else {
+					BalanceMode = 0;
+					printf("Balance Mode OFF \n");
+				}
+                                break;
+                        case 'w' :
+                                BodyPosZint += 5;
+                                break;        
+                        case 'x' :
+                                BodyPosZint -= 5;
+                                break;        
+                        case 'z' :
+                                BodyRotX += 5;
+                                break;        
+                        case 's' :
+                                BodyRotX -= 5;
+                                break;
+                        case 'q' :
+                                BodyPosXint += 5;
+                                break;
+                        case 'd' :
+                                BodyPosXint -= 5;
+                                break;        
+                        case '1' :
+                                TravelRotationY += 10;
+                                break;        
+                        case '2' :
+                                TravelLengthZ += 10;
+                                break;        
+                        case '3' :
+                                TravelRotationY -= 10;
+                                break;        
+                        case '4' :
+                                TravelRotationY += 10;
+                                break;        
+                        case '5' :
+                                FreeServos();
+				TravelRotationY=0;
+                                TravelLengthZ = 0;
+                                TravelLengthX = 0;
+				sleeping = 1;
+				BodyPosYint = 0;
+                                system("aplay /home/root/sons_r2d2/r2d28.wav &");
+				break;        
+                        case '6' :
+                                TravelRotationY -= 10;
+                                break;        
+                        case '7' :
+                                TravelLengthX += 10;
+                                break;        
+                        case '8' :
+                                TravelLengthZ -= 10;
+                                break;        
+                        case '9' :
+                                TravelLengthX -= 10;
+                                break;        
+                        case '0' :
+                                TravelRotationY=0;
+                                TravelLengthZ = 0;
+                                TravelLengthX = 0;
+                                break;        
+                        case '+' :
+                                NomGaitSpeed = NomGaitSpeed + 20;
+                                break;                
+                        case '-' :
+                                NomGaitSpeed = NomGaitSpeed - 20;
+                                break;                
+                        case '/' :
+                                if( GaitType == 0)
+                                        GaitType = 7;
+                                else      
+                                        GaitType--;
+				GaitSelect();
+                                break;
+                        case '*' :
+                                if( GaitType == 7)
+                                        GaitType = 0;
+                                else
+                                        GaitType++;
+                                GaitSelect();
+                                break;
+			case 'p' :
+                                sleeping = 0;
+				starting = 0;
+				system("aplay /home/root/sons_r2d2/r2d25.wav &");
+                                break;
+			
+
 				default : break;
 			}
 			printf("Char received = %x",my_input[0]);
@@ -1262,14 +1394,51 @@ read_flag = read(ser_fd_modem, my_input, 1);;
 
 	}		
 
-    sprintf(Serout, "Q\r");
-
-    // write to serial if connected
-    if ( ser_fd_ssc )
-        write(ser_fd_ssc, &Serout, sizeof(Serout));
 
 
 
+
+}
+
+
+//--------------------------------------------------------------------
+// [BalCalcOneLeg]
+void BalCalcOneLeg (double PosX, double PosZ, double PosY, int offsetX, int offsetZ)
+{
+    // Calculating totals from center of the body to the feet
+    TotalZ = offsetZ + PosZ;
+    TotalX = offsetX + PosX;
+    TotalY =  150 + PosY;                                     // using the value 150 to lower the centerpoint of rotation
+    TotalTransY = TotalTransY + PosY;
+    TotalTransZ = TotalTransZ + TotalZ;
+    TotalTransX = TotalTransX + TotalX;
+    TotalYBal = TotalYBal + ((atan2(TotalZ,TotalX)*180.0) / M_PI);
+    TotalZBal = TotalZBal + ((atan2(TotalY,TotalX)*180.0) / M_PI) - 90;  // Rotate balance circle 90 deg
+    TotalXBal = TotalXBal + ((atan2(TotalY,TotalZ)*180.0) / M_PI) - 90;  // Rotate balance circle 90 deg
+}
+
+//--------------------------------------------------------------------
+// [BalanceBody]
+void BalanceBody()
+{
+    TotalTransZ = TotalTransZ / 8;
+    TotalTransX = TotalTransX / 8;
+    TotalTransY = TotalTransY / 8;
+
+    if ( TotalYBal > 0 )                        // Rotate balance circle by +/- 180 deg
+        TotalYBal = TotalYBal - 180;
+    else
+        TotalYBal = TotalYBal + 180;
+    if ( TotalZBal < -180 )                     // Compensate for extreme balance positions that causes owerflow
+        TotalZBal = TotalZBal + 360;
+    if ( TotalXBal < -180 )                     // Compensate for extreme balance positions that causes owerflow
+        TotalXBal = TotalXBal + 360;
+
+    // Balance rotation
+    TotalYBal = -TotalYBal / 8;
+    TotalXBal = -TotalXBal / 8;
+    TotalZBal =  TotalZBal / 8;
+	printf("Balance X = %f, Y = %f, Z = %f \n",TotalXBal, TotalYBal, TotalZBal);
 }
 
 
@@ -1441,17 +1610,17 @@ while (1)
   TotalXBal = 0;
   TotalYBal = 0;
   TotalZBal = 0;
-  /*
-  IF (BalanceMode>0) THEN 
-   gosub BalCalcOneLeg [-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFGaitPosY, RFOffsetX, RFOffsetZ]
-   gosub BalCalcOneLeg [-RMPosX+BodyPosX+RMGaitPosX, RMPosZ+BodyPosZ+RMGaitPosZ,RMGaitPosY, RMOffsetX, RMOffsetZ]
-   gosub BalCalcOneLeg [-RRPosX+BodyPosX+RRGaitPosX, RRPosZ+BodyPosZ+RRGaitPosZ,RRGaitPosY, RROffsetX, RROffsetZ]
-   gosub BalCalcOneLeg [LFPosX-BodyPosX+LFGaitPosX, LFPosZ+BodyPosZ+LFGaitPosZ,LFGaitPosY, LFOffsetX, LFOffsetZ]
-   gosub BalCalcOneLeg [LMPosX-BodyPosX+LMGaitPosX, LMPosZ+BodyPosZ+LMGaitPosZ,LMGaitPosY, LMOffsetX, LMOffsetZ]
-   gosub BalCalcOneLeg [LRPosX-BodyPosX+LRGaitPosX, LRPosZ+BodyPosZ+LRGaitPosZ,LRGaitPosY, LROffsetX, LROffsetZ]
-   gosub BalanceBody
-  ENDIF
-  */ 
+  
+  if (BalanceMode>0) {
+   BalCalcOneLeg(-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFGaitPosY, RFOffsetX, RFOffsetZ);
+   BalCalcOneLeg( -RMPosX+BodyPosX+RMGaitPosX, RMPosZ+BodyPosZ+RMGaitPosZ,RMGaitPosY, RMOffsetX, RMOffsetZ);
+   BalCalcOneLeg( -RRPosX+BodyPosX+RRGaitPosX, RRPosZ+BodyPosZ+RRGaitPosZ,RRGaitPosY, RROffsetX, RROffsetZ);
+   BalCalcOneLeg( LFPosX-BodyPosX+LFGaitPosX, LFPosZ+BodyPosZ+LFGaitPosZ,LFGaitPosY, LFOffsetX, LFOffsetZ);
+   BalCalcOneLeg( LMPosX-BodyPosX+LMGaitPosX, LMPosZ+BodyPosZ+LMGaitPosZ,LMGaitPosY, LMOffsetX, LMOffsetZ);
+   BalCalcOneLeg( LRPosX-BodyPosX+LRGaitPosX, LRPosZ+BodyPosZ+LRGaitPosZ,LRGaitPosY, LROffsetX, LROffsetZ);
+   BalanceBody();
+  }
+   
   
   //Reset IKsolution indicators
   IKSolution = False;
@@ -1463,43 +1632,43 @@ while (1)
   doBodyRot();
   
   //Right Front leg
-  BodyIK(-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFPosY+BodyPosY+RFGaitPosY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
-  LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ);   
+  BodyIK(-RFPosX+BodyPosX+RFGaitPosX-TotalTransX, RFPosZ+BodyPosZ+RFGaitPosZ-TotalTransZ,RFPosY+BodyPosY+RFGaitPosY-TotalTransY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
+  LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX-TotalTransX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY-TotalTransY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ-TotalTransZ);   
   RFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
   RFFemurAngle = IKFemurAngle;
   RFTibiaAngle = IKTibiaAngle;
    
   //Right Middle leg
-  BodyIK(-RMPosX+BodyPosX+RMGaitPosX, RMPosZ+BodyPosZ+RMGaitPosZ,RMPosY+BodyPosY+RMGaitPosY, (signed int)RMOffsetX, (signed int)RMOffsetZ, (signed int)RMGaitRotY);
-  LegIK(RMPosX-BodyPosX+BodyIKPosX-RMGaitPosX, RMPosY+BodyPosY-BodyIKPosY+RMGaitPosY, RMPosZ+BodyPosZ-BodyIKPosZ+RMGaitPosZ);
+  BodyIK(-RMPosX+BodyPosX+RMGaitPosX-TotalTransX, RMPosZ+BodyPosZ+RMGaitPosZ-TotalTransZ,RMPosY+BodyPosY+RMGaitPosY-TotalTransY, (signed int)RMOffsetX, (signed int)RMOffsetZ, (signed int)RMGaitRotY);
+  LegIK(RMPosX-BodyPosX+BodyIKPosX-RMGaitPosX-TotalTransX, RMPosY+BodyPosY-BodyIKPosY+RMGaitPosY-TotalTransY, RMPosZ+BodyPosZ-BodyIKPosZ+RMGaitPosZ-TotalTransZ);
   RMCoxaAngle  = IKCoxaAngle;
   RMFemurAngle = IKFemurAngle;
   RMTibiaAngle = IKTibiaAngle;  
    
   //Right Rear leg
-  BodyIK(-RRPosX+BodyPosX+RRGaitPosX, RRPosZ+BodyPosZ+RRGaitPosZ,RRPosY+BodyPosY+RRGaitPosY, (signed int)RROffsetX, (signed int)RROffsetZ, (signed int)RRGaitRotY);
-  LegIK(RRPosX-BodyPosX+BodyIKPosX-RRGaitPosX, RRPosY+BodyPosY-BodyIKPosY+RRGaitPosY, RRPosZ+BodyPosZ-BodyIKPosZ+RRGaitPosZ);
+  BodyIK(-RRPosX+BodyPosX+RRGaitPosX-TotalTransX, RRPosZ+BodyPosZ+RRGaitPosZ-TotalTransZ,RRPosY+BodyPosY+RRGaitPosY-TotalTransY, (signed int)RROffsetX, (signed int)RROffsetZ, (signed int)RRGaitRotY);
+  LegIK(RRPosX-BodyPosX+BodyIKPosX-RRGaitPosX-TotalTransX, RRPosY+BodyPosY-BodyIKPosY+RRGaitPosY-TotalTransY, RRPosZ+BodyPosZ-BodyIKPosZ+RRGaitPosZ-TotalTransZ);
   RRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
   RRFemurAngle = IKFemurAngle;
   RRTibiaAngle = IKTibiaAngle;
 
   //Left Front leg
-  BodyIK(LFPosX-BodyPosX+LFGaitPosX, LFPosZ+BodyPosZ+LFGaitPosZ,LFPosY+BodyPosY+LFGaitPosY, (signed int)LFOffsetX, (signed int)LFOffsetZ, (signed int)LFGaitRotY);
-  LegIK(LFPosX+BodyPosX-BodyIKPosX+LFGaitPosX, LFPosY+BodyPosY-BodyIKPosY+LFGaitPosY, LFPosZ+BodyPosZ-BodyIKPosZ+LFGaitPosZ);
+  BodyIK(LFPosX-BodyPosX+LFGaitPosX-TotalTransX, LFPosZ+BodyPosZ+LFGaitPosZ-TotalTransZ,LFPosY+BodyPosY+LFGaitPosY-TotalTransY, (signed int)LFOffsetX, (signed int)LFOffsetZ, (signed int)LFGaitRotY);
+  LegIK(LFPosX+BodyPosX-BodyIKPosX+LFGaitPosX-TotalTransX, LFPosY+BodyPosY-BodyIKPosY+LFGaitPosY-TotalTransY, LFPosZ+BodyPosZ-BodyIKPosZ+LFGaitPosZ-TotalTransZ);
   LFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
   LFFemurAngle = IKFemurAngle;
   LFTibiaAngle = IKTibiaAngle;
 
   //Left Middle leg
-  BodyIK(LMPosX-BodyPosX+LMGaitPosX, LMPosZ+BodyPosZ+LMGaitPosZ,LMPosY+BodyPosY+LMGaitPosY, (signed int)LMOffsetX, (signed int)LMOffsetZ, (signed int)LMGaitRotY);
-  LegIK(LMPosX+BodyPosX-BodyIKPosX+LMGaitPosX, LMPosY+BodyPosY-BodyIKPosY+LMGaitPosY, LMPosZ+BodyPosZ-BodyIKPosZ+LMGaitPosZ);
+  BodyIK(LMPosX-BodyPosX+LMGaitPosX-TotalTransX, LMPosZ+BodyPosZ+LMGaitPosZ-TotalTransZ,LMPosY+BodyPosY+LMGaitPosY-TotalTransY, (signed int)LMOffsetX, (signed int)LMOffsetZ, (signed int)LMGaitRotY);
+  LegIK(LMPosX+BodyPosX-BodyIKPosX+LMGaitPosX-TotalTransX, LMPosY+BodyPosY-BodyIKPosY+LMGaitPosY-TotalTransY, LMPosZ+BodyPosZ-BodyIKPosZ+LMGaitPosZ-TotalTransZ);
   LMCoxaAngle  = IKCoxaAngle;
   LMFemurAngle = IKFemurAngle;
   LMTibiaAngle = IKTibiaAngle;
          
   //Left Rear leg
-  BodyIK(LRPosX-BodyPosX+LRGaitPosX, LRPosZ+BodyPosZ+LRGaitPosZ,LRPosY+BodyPosY+LRGaitPosY, (signed int)LROffsetX, (signed int)LROffsetZ, (signed int)LRGaitRotY);
-  LegIK(LRPosX+BodyPosX-BodyIKPosX+LRGaitPosX, LRPosY+BodyPosY-BodyIKPosY+LRGaitPosY, LRPosZ+BodyPosZ-BodyIKPosZ+LRGaitPosZ);
+  BodyIK(LRPosX-BodyPosX+LRGaitPosX-TotalTransX, LRPosZ+BodyPosZ+LRGaitPosZ-TotalTransZ,LRPosY+BodyPosY+LRGaitPosY-TotalTransY, (signed int)LROffsetX, (signed int)LROffsetZ, (signed int)LRGaitRotY);
+  LegIK(LRPosX+BodyPosX-BodyIKPosX+LRGaitPosX-TotalTransX, LRPosY+BodyPosY-BodyIKPosY+LRGaitPosY-TotalTransY, LRPosZ+BodyPosZ-BodyIKPosZ+LRGaitPosZ-TotalTransZ);
   LRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
   LRFemurAngle = IKFemurAngle;
   LRTibiaAngle = IKTibiaAngle;
@@ -1521,8 +1690,15 @@ while (1)
 
    usleep(NomGaitSpeed*1000);
 
-   ServoDriver();
-   
+   if(sleeping == 0){
+   	ServoDriver();
+	}
+   else {
+	TravelRotationY=0;
+          TravelLengthZ = 0;
+          TravelLengthX = 0;
+          BodyPosYint = 0;
+	}
       
       };
 }
