@@ -477,8 +477,24 @@ void GaitSelect(void) {
    StepsInGait = 18;      
     NomGaitSpeed = 100;
   }
+
+ if(GaitType == 8) { // TEST
+   LRGaitLegNr = 3;
+   RFGaitLegNr = 1;
+   LMGaitLegNr = 11;
+   RRGaitLegNr = 9;
+   LFGaitLegNr = 7;
+   RMGaitLegNr = 5;
+
+   NrLiftedPos = 1;
+   HalfLiftHeigth = FALSE;
+   TLDivFactor = 10;
+   StepsInGait = 12;
+    NomGaitSpeed = 120;
+  }
+
   
-  if(GaitType == 8) { // 4 legs
+  if(GaitType == 9) { // 4 legs
    LRGaitLegNr = 1; 
    RMGaitLegNr = 10;
    LMGaitLegNr = 4;
@@ -494,7 +510,7 @@ void GaitSelect(void) {
     NomGaitSpeed = 150;
   }
   
-  if(GaitType == 10) { //Wave 18 steps
+  if(GaitType == 11) { //Wave 18 steps
    LRGaitLegNr = 12; 
    RFGaitLegNr = 2;
    LMGaitLegNr = 15;
@@ -509,7 +525,7 @@ void GaitSelect(void) {
     NomGaitSpeed = 400;
   }
   
-  if(GaitType == 9) { //Wave 14 steps
+  if(GaitType == 10) { //Wave 14 steps
    LRGaitLegNr = 9; 
    RFGaitLegNr = 2;
    RRGaitLegNr = 5;
@@ -525,6 +541,8 @@ void GaitSelect(void) {
     NomGaitSpeed = 400;
   }
   
+
+
 return;
 }
 
@@ -1368,13 +1386,13 @@ read_flag = read(ser_fd_modem, my_input, 1);;
                                 break;                
                         case '/' :
                                 if( GaitType == 0)
-                                        GaitType = 7;
+                                        GaitType = 8;
                                 else      
                                         GaitType--;
 				GaitSelect();
                                 break;
                         case '*' :
-                                if( GaitType == 7)
+                                if( GaitType == 8)
                                         GaitType = 0;
                                 else
                                         GaitType++;
