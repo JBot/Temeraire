@@ -1,111 +1,5 @@
 
-// Standard Input/Output functions
-//#include <iostream>
-#include <unistd.h>
-#include <math.h>
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>                               // for in-/output
-#include <string.h>                              // strcat
-#include <fcntl.h>                               // for 'O_RDONLY' deklaration
-#include <termios.h>                             // for serial
-
-// Declare your global variables here
-
-#define SSCDEVICE "/dev/ttyS0"
-#define MODEMDEVICE "/dev/rfcomm0"
-#define BAUDRATE B115200
-
-#define False 0
-#define True  1 
-#define FALSE 0
-#define TRUE  1
-
-
-#define BUTTON_DOWN 0
-#define BUTTON_UP   1
-
-// SERVO OFFSET
-#define SERVO_OFFSET0   23
-#define SERVO_OFFSET1   0
-#define SERVO_OFFSET2   20
-
-#define SERVO_OFFSET4   107
-#define SERVO_OFFSET5   -19
-//#define SERVO_OFFSET6   40
-#define SERVO_OFFSET6   48
-
-#define SERVO_OFFSET8   -24
-//#define SERVO_OFFSET9   0
-#define SERVO_OFFSET9   1
-//#define SERVO_OFFSET10  0
-#define SERVO_OFFSET10  12
-    
-
-#define SERVO_OFFSET16  -40
-#define SERVO_OFFSET17  -50
-#define SERVO_OFFSET18  40
-
-#define SERVO_OFFSET20  27
-#define SERVO_OFFSET21  100
-#define SERVO_OFFSET22  40
-
-#define SERVO_OFFSET24  101
-#define SERVO_OFFSET25  48
-//#define SERVO_OFFSET26  0
-#define SERVO_OFFSET26  -27
-
-
-//[MIN/MAX ANGLES]
-#define RRCoxa_MIN -26      //Mechanical limits of the Right Rear Leg
-#define RRCoxa_MAX 74
-#define RRFemur_MIN -101
-#define RRFemur_MAX 95
-#define RRTibia_MIN -106
-#define RRTibia_MAX 77
-
-#define RMCoxa_MIN -53      //Mechanical limits of the Right Middle Leg
-#define RMCoxa_MAX 53
-#define RMFemur_MIN -101
-#define RMFemur_MAX 95
-#define RMTibia_MIN -106
-#define RMTibia_MAX 77
-
-#define RFCoxa_MIN -58      //Mechanical limits of the Right Front Leg
-#define RFCoxa_MAX 74
-#define RFFemur_MIN -101
-#define RFFemur_MAX 95
-#define RFTibia_MIN -106
-#define RFTibia_MAX 77
-
-#define LRCoxa_MIN -74      //Mechanical limits of the Left Rear Leg
-#define LRCoxa_MAX 26
-#define LRFemur_MIN -95
-#define LRFemur_MAX 101
-#define LRTibia_MIN -77
-#define LRTibia_MAX 106
-
-#define LMCoxa_MIN -53      //Mechanical limits of the Left Middle Leg
-#define LMCoxa_MAX 53
-#define LMFemur_MIN -95
-#define LMFemur_MAX 101
-#define LMTibia_MIN -77
-#define LMTibia_MAX 106
-
-#define LFCoxa_MIN -74      //Mechanical limits of the Left Front Leg
-#define LFCoxa_MAX 58
-#define LFFemur_MIN -95
-#define LFFemur_MAX 101
-#define LFTibia_MIN -77
-#define LFTibia_MAX 106
-//--------------------------------------------------------------------
-//[BODY DIMENSIONS]
-#define CoxaLength 29      //Length of the Coxa [mm]
-#define FemurLength 76      //Length of the Femur [mm]
-#define TibiaLength 106     //Lenght of the Tibia [mm]
-
-#define FemurLength2 197      //Length of the Femur [mm]
-#define TibiaLength2 158     //Lenght of the Tibia [mm] 242
+#include "temeraire.h"
 
  signed int ARMCoxaAngle = 0;   
  signed int ARMFemurAngle = 0;
@@ -116,25 +10,6 @@
  signed int armtab[11][3];
  char indexarmtab;
  #endif
-
-#define CoxaAngle 60      //Default Coxa setup angle
-
-#define RFOffsetX -43      //Distance X from center of the body to the Right Front coxa
-#define RFOffsetZ -82      //Distance Z from center of the body to the Right Front coxa
-#define RMOffsetX -63      //Distance X from center of the body to the Right Middle coxa
-#define RMOffsetZ 0        //Distance Z from center of the body to the Right Middle coxa
-#define RROffsetX -43      //Distance X from center of the body to the Right Rear coxa
-#define RROffsetZ 82       //Distance Z from center of the body to the Right Rear coxa
-
-#define LFOffsetX 43      //Distance X from center of the body to the Left Front coxa
-#define LFOffsetZ -82     //Distance Z from center of the body to the Left Front coxa
-#define LMOffsetX 63      //Distance X from center of the body to the Left Middle coxa
-#define LMOffsetZ 0       //Distance Z from center of the body to the Left Middle coxa
-#define LROffsetX 43      //Distance X from center of the body to the Left Rear coxa
-#define LROffsetZ 82      //Distance Z from center of the body to the Left Rear coxa
-//--------------------------------------------------------------------
-//[REMOTE]
-#define TravelDeadZone 4   //The deadzone for the analog input from the remote
 
 
 //====================================================================
@@ -385,7 +260,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = TRUE;
    TLDivFactor = 8;    
    StepsInGait = 12;   
-    NomGaitSpeed = 100+60;
+    NomGaitSpeed = 120;
   }
    
   if (GaitType == 2) { //Quadripple 9 steps
@@ -415,7 +290,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = FALSE;   
    TLDivFactor = 2;    
    StepsInGait = 4;      
-    NomGaitSpeed = 150;
+    NomGaitSpeed = 200;
   }
    
   if (GaitType == 4) { //Tripod 6 steps
@@ -510,13 +385,13 @@ void GaitSelect(void) {
     NomGaitSpeed = 150;
   }
   
-  if(GaitType == 11) { //Wave 18 steps
-   LRGaitLegNr = 12; 
-   RFGaitLegNr = 2;
-   LMGaitLegNr = 15;
-   RRGaitLegNr = 8;
-   LFGaitLegNr = 18;
-   RMGaitLegNr = 5;
+  if(GaitType == 10) { //Wave 18 steps
+   LRGaitLegNr = 5; 
+   RFGaitLegNr = 2; 
+   LMGaitLegNr = 8; 
+   RRGaitLegNr = 15; 
+   LFGaitLegNr = 12; 
+   RMGaitLegNr = 18; 
     
    NrLiftedPos = 2;
    HalfLiftHeigth = FALSE;   
@@ -525,11 +400,11 @@ void GaitSelect(void) {
     NomGaitSpeed = 400;
   }
   
-  if(GaitType == 10) { //Wave 14 steps
-   LRGaitLegNr = 9; 
+  if(GaitType == 11) { //Wave 14 steps
+   LRGaitLegNr = 5; 
    RFGaitLegNr = 2;
-   RRGaitLegNr = 5;
-   LFGaitLegNr = 12;
+   RRGaitLegNr = 12; 
+   LFGaitLegNr = 9; 
    
    RMGaitLegNr = 16;
    LMGaitLegNr = 20;
@@ -970,7 +845,7 @@ void firstposition(void) {
 
 if(starting == 0) {
 
-/* VRAIE POSITION */
+/* VRAIE POSITION */ 
 RFPosX = 60;      //Start positions of the Right Front leg
 RFPosY = 25;
 RFPosZ = -81;
@@ -997,29 +872,29 @@ LRPosZ = 91;
 
 
 /*
-RFPosX = 60;      //Start positions of the Right Front leg
+RFPosX = 30;      //Start positions of the Right Front leg
 RFPosY = 25;
-RFPosZ = -21;
+RFPosZ = 0;
 
 RMPosX = 100;   //Start positions of the Right Middle leg
-RMPosY = 25;
+RMPosY = 0;
 RMPosZ = 0;	
 
-RRPosX = 53;    //Start positions of the Right Rear leg
+RRPosX = 33;    //Start positions of the Right Rear leg
 RRPosY = 25;
-RRPosZ = 41;
+RRPosZ = 0;
 
-LFPosX = 60;      //Start positions of the Left Front leg
+LFPosX = 30;      //Start positions of the Left Front leg
 LFPosY = 25;
-LFPosZ = -21;
+LFPosZ = 0;
 
 LMPosX = 100;   //Start positions of the Left Middle leg
-LMPosY = 25;
+LMPosY = 0;
 LMPosZ = 0;
 
-LRPosX = 53;      //Start positions of the Left Rear leg
+LRPosX = 33;      //Start positions of the Left Rear leg
 LRPosY = 25;
-LRPosZ = 41;
+LRPosZ = 0;
 */
 
 // RotPoint = 82; //(arriere du robot)
@@ -1413,52 +1288,7 @@ read_flag = read(ser_fd_modem, my_input, 1);;
 	}		
 
 
-
-
-
 }
-
-/*
-//--------------------------------------------------------------------
-// [BalCalcOneLeg]
-void BalCalcOneLeg (double PosX, double PosZ, double PosY, int offsetX, int offsetZ)
-{
-    // Calculating totals from center of the body to the feet
-    TotalZ = offsetZ + PosZ;
-    TotalX = offsetX + PosX;
-    TotalY =  150 + PosY;                                     // using the value 150 to lower the centerpoint of rotation
-    TotalTransY = TotalTransY + PosY;
-    TotalTransZ = TotalTransZ + TotalZ;
-    TotalTransX = TotalTransX + TotalX;
-    TotalYBal = TotalYBal + ((atan2(TotalZ,TotalX)*180.0) / M_PI);
-    TotalZBal = TotalZBal + ((atan2(TotalY,TotalX)*180.0) / M_PI) - 90;  // Rotate balance circle 90 deg
-    TotalXBal = TotalXBal + ((atan2(TotalY,TotalZ)*180.0) / M_PI) - 90;  // Rotate balance circle 90 deg
-}
-
-//--------------------------------------------------------------------
-// [BalanceBody]
-void BalanceBody()
-{
-    TotalTransZ = TotalTransZ / 8;
-    TotalTransX = TotalTransX / 8;
-    TotalTransY = TotalTransY / 8;
-
-    if ( TotalYBal > 0 )                        // Rotate balance circle by +/- 180 deg
-        TotalYBal = TotalYBal - 180;
-    else
-        TotalYBal = TotalYBal + 180;
-    if ( TotalZBal < -180 )                     // Compensate for extreme balance positions that causes owerflow
-        TotalZBal = TotalZBal + 360;
-    if ( TotalXBal < -180 )                     // Compensate for extreme balance positions that causes owerflow
-        TotalXBal = TotalXBal + 360;
-
-    // Balance rotation
-    TotalYBal = -TotalYBal / 8;
-    TotalXBal = -TotalXBal / 8;
-    TotalZBal =  TotalZBal / 8;
-	printf("Balance X = %f, Y = %f, Z = %f \n",TotalXBal, TotalYBal, TotalZBal);
-}
-*/
 
 
 //;--------------------------------------------------------------------
@@ -1523,13 +1353,7 @@ return;
 }
 
 
-void main(void)
-{
-// Declare your local variables here
-int timeout_end = 0;
-
-
-
+void open_interfaces(void) {
 
 // USART0 initialization
 // Communication Parameters: 8 Data, 1 Stop, No Parity
@@ -1538,6 +1362,95 @@ int timeout_end = 0;
 // USART0 Mode: Asynchronous
 // USART0 Baud rate: 115200
 
+ser_fd_ssc = open(SSCDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
+system("aplay /home/root/sons_robot/serial_connection.wav ");
+if( ser_fd_ssc == -1)
+    {
+        printf( " SSC Serial Not Open \n" );
+	system("aplay /home/root/sons_robot/nok.wav ");
+    }
+    else
+    {
+        printf( " SSC Serial Open \n" );
+	system("aplay /home/root/sons_robot/ok.wav ");
+        tcgetattr(ser_fd_ssc, &oldtio_ssc);                             // Backup old port settings
+        memset(&newtio_ssc, 0, sizeof(newtio_ssc));
+
+        newtio_ssc.c_iflag = IGNBRK | IGNPAR;
+        newtio_ssc.c_oflag = 0;
+        newtio_ssc.c_cflag = BAUDRATE | CREAD | CS8 | CLOCAL;
+        newtio_ssc.c_lflag = 0;
+
+        tcflush(ser_fd_ssc, TCIFLUSH);
+        tcsetattr(ser_fd_ssc, TCSANOW, &newtio_ssc);
+
+        memset(&newtio_ssc, 0, sizeof(newtio_ssc));
+        tcgetattr(ser_fd_ssc, &newtio_ssc);
+
+        fcntl(ser_fd_ssc, F_SETFL, FNDELAY);
+
+    }
+
+
+// USART1 initialization
+// Communication Parameters: 8 Data, 1 Stop, No Parity
+// USART1 Receiver: On
+// USART1 Transmitter: On
+// USART1 Mode: Asynchronous
+// USART1 Baud rate: 115200
+
+
+ser_fd_modem = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
+system("aplay /home/root/sons_robot/bluetooth_connection.wav ");
+if( ser_fd_modem == -1)
+    {
+        printf( " MODEM Serial Not Open \n" );
+	system("aplay /home/root/sons_robot/nok.wav ");
+    }
+    else
+    {
+        printf( " MODEM Serial Open \n" );
+	system("aplay /home/root/sons_robot/ok.wav ");
+        fcntl(ser_fd_modem, F_SETFL, FNDELAY);
+        tcgetattr(ser_fd_modem, &oldtio_modem);                             // Backup old port settings
+        memset(&newtio_modem, 0, sizeof(newtio_modem));
+
+        newtio_modem.c_iflag = IGNBRK | IGNPAR;
+        newtio_modem.c_oflag = 0;
+        newtio_modem.c_cflag = BAUDRATE | CREAD | CS8 | CLOCAL;
+        newtio_modem.c_lflag = 0;
+
+        tcflush(ser_fd_modem, TCIFLUSH);
+        tcsetattr(ser_fd_modem, TCSANOW, &newtio_modem);
+
+        memset(&newtio_modem, 0, sizeof(newtio_modem));
+        tcgetattr(ser_fd_modem, &newtio_modem);
+
+        fcntl(ser_fd_modem, F_SETFL, FNDELAY);
+    }
+
+
+
+
+}
+
+
+void main(void)
+{
+// Declare your local variables here
+	int timeout_end = 0;
+
+
+	open_interfaces();
+
+
+// USART0 initialization
+// Communication Parameters: 8 Data, 1 Stop, No Parity
+// USART0 Receiver: On
+// USART0 Transmitter: On
+// USART0 Mode: Asynchronous
+// USART0 Baud rate: 115200
+/*
 ser_fd_ssc = open(SSCDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 if( ser_fd_ssc == -1)
@@ -1564,7 +1477,7 @@ if( ser_fd_ssc == -1)
 	fcntl(ser_fd_ssc, F_SETFL, FNDELAY);
 
     }
-
+*/
 
 
 
@@ -1575,7 +1488,7 @@ if( ser_fd_ssc == -1)
 // USART1 Mode: Asynchronous
 // USART1 Baud rate: 115200
 
-
+/*
 ser_fd_modem = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 if( ser_fd_modem == -1)
@@ -1602,7 +1515,7 @@ if( ser_fd_modem == -1)
     
 	fcntl(ser_fd_modem, F_SETFL, FNDELAY);
     }
-
+*/
 
 
 
