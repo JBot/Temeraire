@@ -227,6 +227,38 @@ struct termios oldtio_ssc, newtio_ssc;
 int ser_fd_modem;
 struct termios oldtio_modem, newtio_modem;
 
+// ADC
+int file_adc;
+struct twl4030_madc_user_parms *par;
+
+// Thread
+pthread_t p_thread[1];
+
+
+
+
+
+float read_adc(int file, struct twl4030_madc_user_parms *par, int adc_channel) {
+
+        memset(par, 0, sizeof(struct twl4030_madc_user_parms));
+        par->channel = channels[adc_channel].number;
+        int ret = ioctl(file, TWL4030_MADC_IOCX_ADC_RAW_READ, par);
+        float result = ((unsigned int)par->result) / 1024.f; // 10 bit ADC -> 1024
+
+        if (ret == 0 && par->status != -1)
+                printf("%s (channel %d): %f\n", channels[adc_channel].name,
+                          channels[adc_channel].number, result * channels[adc_channel].input_range);
+        else
+        {
+                if (par->status == -1)
+                          printf("Channel %d (%s) timed out!\n", adc_channel, channels[adc_channel].name);
+                printf("ERROR\n");
+        }
+
+        return result;
+
+}
+
 
 
 /*--------------------------------------------------------------------
@@ -1353,7 +1385,31 @@ return;
 }
 
 
+void *thread_adc_battery(void *arg) {
+  	float battery_voltage = 0.0;
+	fprintf(stdout, "Thread: %d running.\n", (int)1);
+  
+	while(1) {
+
+		sleep((int)20);
+		
+               	battery_voltage = read_adc(file_adc, par, 0);
+		if( battery_voltage < 1.7  ) {
+			system("aplay /home/root/sons_robot/low_battery.wav &");
+			fprintf(stdout, "LOW BATTERY.\n");
+		}
+
+	}
+  fprintf(stdout, "Thread: %d done.\n", (int)1);
+
+  pthread_exit(0);
+}
+
+
+
 void open_interfaces(void) {
+
+float battery_voltage = 0.0;
 
 // USART0 initialization
 // Communication Parameters: 8 Data, 1 Stop, No Parity
@@ -1430,6 +1486,32 @@ if( ser_fd_modem == -1)
     }
 
 
+	file_adc = open("/dev/twl4030-madc", O_RDWR | O_NONBLOCK);
+	system("aplay /home/root/sons_robot/adc.wav ");
+        if (file_adc == -1)
+        {
+		system("aplay /home/root/sons_robot/nok.wav ");
+                printf("could not open ADC\n");
+        }
+	else {
+		system("aplay /home/root/sons_robot/ok.wav ");
+	}
+
+        par = malloc(sizeof(struct twl4030_madc_user_parms));
+
+	battery_voltage = read_adc(file_adc, par, 0);
+        if( battery_voltage < 1.7  ) {
+                system("aplay /home/root/sons_robot/low_battery.wav ");
+                fprintf(stdout, "LOW BATTERY.\n");
+        }
+	else {
+		system("aplay /home/root/sons_robot/battery_ok.wav ");
+                fprintf(stdout, "LOW BATTERY.\n");
+	}
+
+/* Create the thread for battery monitoring */
+if(pthread_create(&p_thread[0], NULL, thread_adc_battery, (void *)NULL) != 0)
+      fprintf(stderr, "Error creating the thread");
 
 
 }

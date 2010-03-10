@@ -10,6 +10,8 @@
 #include <string.h>                              // strcat
 #include <fcntl.h>                               // for 'O_RDONLY' deklaration
 #include <termios.h>                             // for serial
+// For p_thread :
+#include <pthread.h>
 
 #include "../adc/gumadc.h"
 
