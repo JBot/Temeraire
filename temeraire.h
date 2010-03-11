@@ -12,10 +12,15 @@
 #include <termios.h>                             // for serial
 // For p_thread :
 #include <pthread.h>
+// For I2C : 
+#include <linux/i2c-dev.h>
+
 
 #include "../adc/gumadc.h"
 
 // Declare your global variables here
+
+#define US_DEVICE 0x70
 
 #define SSCDEVICE "/dev/ttyS0"
 #define MODEMDEVICE "/dev/rfcomm0"

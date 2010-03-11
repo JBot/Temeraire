@@ -231,16 +231,122 @@ struct termios oldtio_modem, newtio_modem;
 int file_adc;
 struct twl4030_madc_user_parms *par;
 
+// I2C
+int file_i2c;
+int us_sensor_distance = 255;
+
 // Thread
-pthread_t p_thread[1];
+pthread_t p_thread[10];
 
 
 
+
+/* Functions */
+// I/O Functions
+void open_interfaces(void);
+int read_reg_i2c(int fh, uint8_t reg, int count);
+int write_reg_i2c(int fh, uint8_t reg, uint8_t val);
+float read_adc(int file, struct twl4030_madc_user_parms *par, int adc_channel);
+
+// Robot Gait and IK functions
+void GaitSelect(void);
+void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int GaitPosZZ, signed int GaitRotYY);
+void GaitSeq(void);
+void GetSinCos (float AngleDeg);
+void BodyIK(signed int PosX, signed int PosZ, signed int PosY, signed int BodyOffsetX, signed int BodyOffsetZ, signed int RotationY);
+void GetBoogTan(float BoogTanX, float BoogTanY);
+void LegIK(signed int IKFeetPosX, signed int IKFeetPosY, signed int IKFeetPosZ);
+void LegIK2(signed long IKFeetPosX, signed long IKFeetPosY, signed long IKFeetPosZ);
+void setRotPoint(signed int z);
+void firstposition(void);
+void doBodyRot(void);
+
+// Servo and Input to give orders
+void ServoDriver(void);
+void FreeServos();
+void getInput(void);
+
+// Balance functions
+void BalCalcOneLeg(double my_PosX, double my_PosZ,double my_PosY,int my_BodyOffsetX, int my_BodyOffsetZ);
+void BalanceBody();
+
+// Threads
+void *thread_adc_battery(void *arg);
+void *thread_i2c_ultrasound(void *args);
+
+
+
+
+void *thread_i2c_ultrasound(void *arg) {
+        int result, result2;
+	fprintf(stdout, "Thread: %d (Ultrasound sensor) running.\n", (int)2);
+
+        while(1) {
+		
+		if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+			printf("\n\nwrite bad...\n");
+		
+		usleep(100000);
+
+		result = read_reg_i2c(file_i2c, 2, 1);
+		result2 = read_reg_i2c(file_i2c, 3, 1);
+		
+		if (result == -1)
+			printf("\n\nread bad...\n");
+
+		printf("IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
+		us_sensor_distance = ((result & 0xff) << 8) + (result2 &  0xff);
+		printf("us_sensor : %i \n", us_sensor_distance);
+
+        }
+  fprintf(stdout, "Thread: %d done.\n", (int)2);
+
+  pthread_exit(0);
+}
+
+
+int read_reg_i2c(int fh, uint8_t reg, int count) {
+	uint8_t data[2];
+
+	if (count < 0 || count > 2)
+		return -1;
+
+	data[0] = reg;
+
+	if (write(fh, &data, 1) != 1) {
+		perror("write before read");
+		return -1;
+	}
+
+	data[1] = 0;
+
+	if (read(fh, &data, count) != count) {
+		perror("read");
+		return -1;
+	}
+
+	return (data[1] << 8) + data[0];
+}
+
+int write_reg_i2c(int fh, uint8_t reg, uint8_t val) {
+	uint8_t data[2];
+
+	data[0] = reg;
+	data[1] = val;
+
+	if (write(fh, &data, 2) != 2) {
+		perror("write");
+		return -1;
+	}
+
+	return 1;
+}
 
 
 float read_adc(int file, struct twl4030_madc_user_parms *par, int adc_channel) {
 
         memset(par, 0, sizeof(struct twl4030_madc_user_parms));
+
         par->channel = channels[adc_channel].number;
         int ret = ioctl(file, TWL4030_MADC_IOCX_ADC_RAW_READ, par);
         float result = ((unsigned int)par->result) / 1024.f; // 10 bit ADC -> 1024
@@ -1180,7 +1286,7 @@ return;
 void FreeServos()
 {
     int x =0;
-    char Serout[260]={0}, temp[10]={0};
+    char Serout[260]={0};
     for ( x=0; x <= 31; x++ )
     {
         sprintf(Serout, "%s#%dP0 ", Serout, x);
@@ -1198,7 +1304,6 @@ void getInput(void) {
 
 char my_input[50];
 char read_flag;
-char Serout[260]={0}, temp[10]={0};
 
 read_flag = read(ser_fd_modem, my_input, 1);;
 
@@ -1391,7 +1496,7 @@ void *thread_adc_battery(void *arg) {
   
 	while(1) {
 
-		sleep((int)20);
+		sleep((int)60);
 		
                	battery_voltage = read_adc(file_adc, par, 0);
 		if( battery_voltage < 1.7  ) {
@@ -1486,6 +1591,30 @@ if( ser_fd_modem == -1)
     }
 
 
+	/* US sensor check */
+	file_i2c = open("/dev/i2c-3", O_RDWR);
+	system("aplay /home/root/sons_robot/i2c_connection.wav ");
+	if (file_i2c < 0) {
+		printf("Could not open i2c-3\n");
+		system("aplay /home/root/sons_robot/nok.wav ");
+	}
+	else { // i2c ok => list the available services
+		system("aplay /home/root/sons_robot/ok.wav ");
+		
+		// US sensor 
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE) < 0) {
+			printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE)\n");
+		}
+		else {
+			//if(pthread_create(&p_thread[1], NULL, thread_i2c_ultrasound, (void *)NULL) != 0)
+      			//	fprintf(stderr, "Error creating the thread (US)");
+		
+		}
+
+	}
+
+
+	/* Battery check */
 	file_adc = open("/dev/twl4030-madc", O_RDWR | O_NONBLOCK);
 	system("aplay /home/root/sons_robot/adc.wav ");
         if (file_adc == -1)
@@ -1517,11 +1646,9 @@ if(pthread_create(&p_thread[0], NULL, thread_adc_battery, (void *)NULL) != 0)
 }
 
 
-void main(void)
+int main(void)
 {
 // Declare your local variables here
-	int timeout_end = 0;
-
 
 	open_interfaces();
 
@@ -1775,4 +1902,6 @@ while (1)
 	}
       
       };
+
+	return 0;
 }
