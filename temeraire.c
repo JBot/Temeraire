@@ -234,6 +234,7 @@ struct twl4030_madc_user_parms *par;
 // I2C
 int file_i2c;
 int us_sensor_distance = 255;
+int us_sensor_light = 255;
 
 // Thread
 pthread_t p_thread[10];
@@ -278,7 +279,7 @@ void *thread_i2c_ultrasound(void *args);
 
 
 void *thread_i2c_ultrasound(void *arg) {
-        int result, result2;
+        uint16_t result, result2;
 	fprintf(stdout, "Thread: %d (Ultrasound sensor) running.\n", (int)2);
 	usleep(70000);
         while(1) {
@@ -288,14 +289,23 @@ void *thread_i2c_ultrasound(void *arg) {
 		
 		usleep(100000);
 
-		result = read_reg_i2c(file_i2c, 2, 1);
-		result2 = read_reg_i2c(file_i2c, 3, 1);
-		
+		result = (uint16_t)read_reg_i2c(file_i2c, 0x02, 1);
+		result2 = (uint16_t)read_reg_i2c(file_i2c, 0x03, 1);
+		/*printf("1 : IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
+		result = (uint16_t)read_reg_i2c(file_i2c, 0x04, 1);
+                result2 = (uint16_t)read_reg_i2c(file_i2c, 0x05, 1);
+                printf("2 : IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
+		result = (uint16_t)read_reg_i2c(file_i2c, 0x06, 1);
+                result2 = (uint16_t)read_reg_i2c(file_i2c, 0x07, 1);
+                printf("3 : IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
+		*/
+		us_sensor_light = (uint16_t)read_reg_i2c(file_i2c, 0x01, 1);		
+
 		if (result == -1)
 			printf("\n\nread bad...\n");
 
-		//printf("IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
-		us_sensor_distance = ((result & 0xff) << 8) + (result2 &  0xff);
+		//printf("IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
+		us_sensor_distance = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
 		//printf("us_sensor : %i \n", us_sensor_distance);
 
         }
@@ -383,7 +393,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = FALSE;    
    TLDivFactor = 4;    
    StepsInGait = 6;
-   NomGaitSpeed = 150;
+   NomGaitSpeed = 200;
   } 
    
   if (GaitType == 1) { //Ripple Gait 12 steps
@@ -398,7 +408,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = TRUE;
    TLDivFactor = 8;    
    StepsInGait = 12;   
-    NomGaitSpeed = 120;
+    NomGaitSpeed = 150;
   }
    
   if (GaitType == 2) { //Quadripple 9 steps
@@ -984,29 +994,29 @@ void firstposition(void) {
 if(starting == 0) {
 
 /* VRAIE POSITION */ 
-RFPosX = 60;      //Start positions of the Right Front leg
+RFPosX = 70;      //Start positions of the Right Front leg
 RFPosY = 25;
-RFPosZ = -81;
+RFPosZ = -31;
 
 RMPosX = 100;   //Start positions of the Right Middle leg
 RMPosY = 25;
 RMPosZ = 10;	
 
-RRPosX = 53;    //Start positions of the Right Rear leg
+RRPosX = 63;    //Start positions of the Right Rear leg
 RRPosY = 25;
-RRPosZ = 91;
+RRPosZ = 31;
 
-LFPosX = 60;      //Start positions of the Left Front leg
+LFPosX = 70;      //Start positions of the Left Front leg
 LFPosY = 25;
-LFPosZ = -81;
+LFPosZ = -31;
 
 LMPosX = 100;   //Start positions of the Left Middle leg
 LMPosY = 25;
 LMPosZ = 10;
 
-LRPosX = 53;      //Start positions of the Left Rear leg
+LRPosX = 63;      //Start positions of the Left Rear leg
 LRPosY = 25;
-LRPosZ = 91;
+LRPosZ = 31;
 
 
 /*
@@ -1417,8 +1427,9 @@ read_flag = read(ser_fd_modem, my_input, 1);
 				system("aplay /home/root/sons_r2d2/r2d25.wav &");
                                 break;
 			case 'm' :
-                                sprintf(Serout, "%s US SENSOR : %d \n", Serout, us_sensor_distance);
-                                break;
+                                sprintf(Serout, "%s US SENSOR : %d ", Serout, us_sensor_distance);
+                                sprintf(Serout, "%s LIGHT SENSOR : %d \n\r", Serout, us_sensor_light);
+				break;
 
 				default : break;
 			}
@@ -1627,7 +1638,7 @@ if( ser_fd_modem == -1)
 			printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE)\n");
 		}
 		else {
-			if (write_reg_i2c(file_i2c, 0, 0x51) == -1) {
+			if (write_reg_i2c(file_i2c, 0x02, 0x8C) == -1) {
                         	printf("\n\nwrite bad...\n");
 			}
 			else {
@@ -1917,7 +1928,7 @@ while (1)
 */ 
 	for(wait_counter = 0; wait_counter < 10; wait_counter++) {
    		usleep(NomGaitSpeed*100);
-		if ( us_sensor_distance < 10 ) {
+		if ( us_sensor_distance < 15 && TravelLengthZ < 0) {
 			TravelLengthZ = 0;
 		}
 	}
