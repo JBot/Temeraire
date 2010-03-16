@@ -280,7 +280,7 @@ void *thread_i2c_ultrasound(void *args);
 void *thread_i2c_ultrasound(void *arg) {
         int result, result2;
 	fprintf(stdout, "Thread: %d (Ultrasound sensor) running.\n", (int)2);
-
+	usleep(70000);
         while(1) {
 		
 		if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
@@ -294,9 +294,9 @@ void *thread_i2c_ultrasound(void *arg) {
 		if (result == -1)
 			printf("\n\nread bad...\n");
 
-		printf("IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
+		//printf("IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
 		us_sensor_distance = ((result & 0xff) << 8) + (result2 &  0xff);
-		printf("us_sensor : %i \n", us_sensor_distance);
+		//printf("us_sensor : %i \n", us_sensor_distance);
 
         }
   fprintf(stdout, "Thread: %d done.\n", (int)2);
@@ -1304,8 +1304,9 @@ void getInput(void) {
 
 char my_input[50];
 char read_flag;
+char Serout[260]={0};
 
-read_flag = read(ser_fd_modem, my_input, 1);;
+read_flag = read(ser_fd_modem, my_input, 1);
 
 	if( (read_flag != 0) || (my_input[0] != 0) ) {
 		
@@ -1415,14 +1416,34 @@ read_flag = read(ser_fd_modem, my_input, 1);;
 				starting = 0;
 				system("aplay /home/root/sons_r2d2/r2d25.wav &");
                                 break;
-			
+			case 'm' :
+                                sprintf(Serout, "%s US SENSOR : %d \n", Serout, us_sensor_distance);
+                                break;
 
 				default : break;
 			}
-			printf("Char received = %x",my_input[0]);
+			printf("Char received = %x \n",my_input[0]);
+		
+
+			sprintf(Serout, "%s %d %d %d", Serout, TravelLengthX, TravelRotationY, TravelLengthZ);
+                        sprintf(Serout, "%s %d %d %d", Serout, BodyPosXint, BodyPosYint, BodyPosZint);
+                        sprintf(Serout, "%s %d %d %d", Serout, BodyRotX, BodyRotY, BodyRotZ);
+                        sprintf(Serout, "%s %d %d %d", Serout, GaitType, NomGaitSpeed, RotPoint);/*
+                        sprintf(Serout, "%s %d %d %d", Serout, , , );
+                        sprintf(Serout, "%s %d %d %d", Serout, , , );
+*/
+    			sprintf(Serout, "%s \n\r", Serout);
+			// write to serial if connected
+    			if ( ser_fd_modem )
+        			write(ser_fd_modem, &Serout, sizeof(Serout));
+
+		
+
 		}
 
 	}		
+	
+	
 
 
 }
@@ -1606,9 +1627,13 @@ if( ser_fd_modem == -1)
 			printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE)\n");
 		}
 		else {
-			//if(pthread_create(&p_thread[1], NULL, thread_i2c_ultrasound, (void *)NULL) != 0)
-      			//	fprintf(stderr, "Error creating the thread (US)");
-		
+			if (write_reg_i2c(file_i2c, 0, 0x51) == -1) {
+                        	printf("\n\nwrite bad...\n");
+			}
+			else {
+				if(pthread_create(&p_thread[1], NULL, thread_i2c_ultrasound, (void *)NULL) != 0)
+      					fprintf(stderr, "Error creating the thread (US)");
+			}
 		}
 
 	}
@@ -1649,6 +1674,8 @@ if(pthread_create(&p_thread[0], NULL, thread_adc_battery, (void *)NULL) != 0)
 int main(void)
 {
 // Declare your local variables here
+int wait_counter = 0;
+
 
 	open_interfaces();
 
@@ -1888,9 +1915,12 @@ while (1)
         putchar(13);
    }
 */ 
-
-   usleep(NomGaitSpeed*1000);
-
+	for(wait_counter = 0; wait_counter < 10; wait_counter++) {
+   		usleep(NomGaitSpeed*100);
+		if ( us_sensor_distance < 10 ) {
+			TravelLengthZ = 0;
+		}
+	}
    if(sleeping == 0){
    	ServoDriver();
 	}
