@@ -1,6 +1,8 @@
 
 #include "temeraire.h"
 
+#define NEW_INPUT_PROTOCOL
+
  signed int ARMCoxaAngle = 0;   
  signed int ARMFemurAngle = 0;
  signed int ARMTibiaAngle = 0;
@@ -227,6 +229,11 @@ struct termios oldtio_ssc, newtio_ssc;
 int ser_fd_modem;
 struct termios oldtio_modem, newtio_modem;
 
+char wait_command_flag = 1;
+char modem_command;
+int temp_input = 0;
+
+
 // ADC
 int file_adc;
 struct twl4030_madc_user_parms *par;
@@ -265,7 +272,11 @@ void doBodyRot(void);
 // Servo and Input to give orders
 void ServoDriver(void);
 void FreeServos();
+#ifdef NEW_INPUT_PROTOCOL
+void *getInput(void *args);
+#else 
 void getInput(void);
+#endif
 
 // Balance functions
 void BalCalcOneLeg(double my_PosX, double my_PosZ,double my_PosY,int my_BodyOffsetX, int my_BodyOffsetZ);
@@ -1201,16 +1212,23 @@ void ServoDriver(void){
 
   /* Head */ 
 
+	temp = (int) ( (float)(BodyRotZ + 90)/0.10588238 ) + 650;
+        sprintf(Serout, "%s #%dP%d", Serout, 28, temp);
+        temp = (int) ( (float)(BodyRotY + 90)/0.10588238 ) + 650;
+        sprintf(Serout, "%s #%dP%d", Serout, 29, temp);
+	temp = (int) ( (float)(BodyRotX + 90)/0.10588238 ) + 650;
+        sprintf(Serout, "%s #%dP%d", Serout, 30, temp);
+/*
 	temp = (int)( (float)(headAngle +90)/0.10588238 ) + 650 + 0;
         sprintf(Serout, "%s #%dP%d", Serout, 30, temp);
-        
+*/        
   /* Turret */
-        
+  /*      
 	temp = (int) horizontal_turret;
         sprintf(Serout, "%s #%dP%d", Serout, 28, temp);
 	temp = (int) vertical_turret;
         sprintf(Serout, "%s #%dP%d", Serout, 29, temp);
-
+*/
 
   // ARM
 
@@ -1308,7 +1326,205 @@ void FreeServos()
         write(ser_fd_ssc, &Serout, sizeof(Serout));
 }
 
+#ifdef NEW_INPUT_PROTOCOL
+void *getInput(void *args) {
 
+char my_input[50];
+char read_flag;
+char Serout[260]={0};
+int i=0;
+char speak_buff[300]={0};
+
+printf("Thread Input running.\n");
+while(1) {
+usleep(8000);
+
+/* New test of comm protocol */
+
+if( wait_command_flag == 1) {
+	/* Waiting command */
+
+	read_flag = read(ser_fd_modem, my_input, 1);
+
+        if( (read_flag != 0) && (my_input[0] != 0) ) {
+
+                if(read_flag == -1){
+                        printf("Reading error.");
+                }
+                else {
+		        modem_command = my_input[0];
+		        wait_command_flag = 0;
+			temp_input = 0;
+			printf("Command received \n");
+		}
+	}
+}
+
+
+if( wait_command_flag == 0) {
+	/* Waiting data */
+
+	read_flag = read(ser_fd_modem, my_input, 1);
+
+        if( (read_flag != 0) && (my_input[0] != 0) ) {
+
+                if(read_flag == -1){
+                        printf("Reading error.");
+                }
+                else {
+
+                	if( my_input[0] == '\n' ) { // End of datas
+						
+		  	switch(modem_command) {
+
+				case 'A' : // Balance mode
+					BalanceMode = temp_input;
+					break;
+                                case 'a' : // Balance mode
+
+                                        break;
+                                case 'B' : // BodyPosX
+					BodyPosX = temp_input;
+                                        break;
+                                case 'b' : 
+					BodyPosX = temp_input;
+                                        break;
+                                case 'C' : // BodyPosY
+					BodyPosY = temp_input;
+                                        break;
+                                case 'c' : 
+					BodyPosY = temp_input;
+                                        break;
+                                case 'D' : // BodyPosZ
+					BodyPosZ = temp_input;
+                                        break;
+                                case 'd' : 
+					BodyPosZ = temp_input;
+                                        break;
+                                case 'E' : // BodyRotX
+					BodyRotX = temp_input;
+                                        break;
+                                case 'e' : 
+					BodyRotX = temp_input;
+                                        break;
+                                case 'F' : // BodyRotY
+					BodyRotY = temp_input;
+                                        break;
+                                case 'f' : 
+					BodyRotY = temp_input;
+                                        break;
+                                case 'G' : // BodyRotZ
+					BodyRotZ = temp_input;
+                                        break;
+                                case 'g' : 
+					BodyRotZ = temp_input;
+                                        break;
+                                case 'H' : // GaitType
+					GaitType = temp_input;
+					GaitSelect();
+                                        break;
+                                case 'h' : 
+
+                                        break;
+                                case 'I' : // GaitSpeed
+					NomGaitSpeed = temp_input;
+                                        break;
+                                case 'i' : 
+					NomGaitSpeed = temp_input;
+                                        break;
+                                case 'O' : // ON / OFF
+					sleeping = 0;
+                                	starting = 0;
+                                	system("aplay /var/sons_r2d2/r2d25.wav &");
+                                        break;
+                                case 'o' : // OFF
+					FreeServos();
+                                	TravelRotationY=0;
+                                	TravelLengthZ = 0;
+                                	TravelLengthX = 0;
+                                	sleeping = 1;
+                                	BodyPosYint = 0;
+                                	system("aplay /var/sons_r2d2/r2d28.wav &");
+					break;
+                                case 'R' : // RotationPoint
+					RotPoint = temp_input;
+                                        break;
+                                case 'r' : 
+					RotPoint = temp_input;
+                                        break;
+                                case 'S' : // Speak
+					Serout[i++]='\0';
+					//printf("%s",Serout);
+					sprintf(speak_buff,"espeak -v fr \"%s\" &",Serout);
+					system(speak_buff);
+					i = 0;
+                                        break;
+                                case 's' :
+					Serout[i++]='\0';
+                                        //printf("%s",Serout);
+                                        sprintf(speak_buff,"espeak -v en \"%s\" &",Serout);
+                                        system(speak_buff);
+                                        i = 0;
+                                        break;
+                                case 'T' : // TravelLengthX
+					TravelLengthX = temp_input;
+                                        break;
+                                case 't' : 
+					TravelLengthX = temp_input;
+                                        break;
+                                case 'U' : //TravelRotY
+					//printf("Positif \n");
+					TravelRotationY = temp_input;
+                                        break;
+                                case 'u' : 
+					//printf("Negatif \n");
+					TravelRotationY = temp_input;
+                                        break;
+                                case 'V' : // TravelLengthZ
+					TravelLengthZ = temp_input;
+                                        break;
+                                case 'v' : 
+					TravelLengthZ = temp_input;
+                                        break;
+                                case 'Z' : // Special commands
+
+                                        break;
+                                case 'z' : 
+
+                                        break;
+
+			
+				default : break;			
+				
+
+			}
+			wait_command_flag = 1;
+
+			temp_input = 0;
+			}
+			else { // New data
+	
+				if( (modem_command == 'S') || (modem_command == 's')) { // Speak command, so don't modify characters
+
+					Serout[i++]=my_input[0];
+
+				}
+				else {
+					if( modem_command < 92 )
+						temp_input = (temp_input * 10) + (my_input[0] - 48);
+					else 
+				  		temp_input = (temp_input * 10) - (my_input[0] - 48);
+				}
+				//printf(" temp_input = %d \n", temp_input);
+			}
+		}
+        }
+}
+}
+printf("Thread Input ended.\n");
+}
+
+#else
 
 void getInput(void) {
 
@@ -1324,6 +1540,7 @@ read_flag = read(ser_fd_modem, my_input, 1);
 			printf("Reading error.");
 		}
 		else {
+			
 			switch(my_input[0]) {
 
 			case 'v' :
@@ -1382,7 +1599,7 @@ read_flag = read(ser_fd_modem, my_input, 1);
                                 TravelLengthX = 0;
 				sleeping = 1;
 				BodyPosYint = 0;
-                                system("aplay /home/root/sons_r2d2/r2d28.wav &");
+                                system("aplay /var/sons_r2d2/r2d28.wav &");
 				break;        
                         case '6' :
                                 TravelRotationY -= 10;
@@ -1424,7 +1641,7 @@ read_flag = read(ser_fd_modem, my_input, 1);
 			case 'p' :
                                 sleeping = 0;
 				starting = 0;
-				system("aplay /home/root/sons_r2d2/r2d25.wav &");
+				system("aplay /var/sons_r2d2/r2d25.wav &");
                                 break;
 			case 'm' :
                                 sprintf(Serout, "%s US SENSOR : %d ", Serout, us_sensor_distance);
@@ -1433,6 +1650,7 @@ read_flag = read(ser_fd_modem, my_input, 1);
 
 				default : break;
 			}
+			
 			printf("Char received = %x \n",my_input[0]);
 		
 
@@ -1458,7 +1676,7 @@ read_flag = read(ser_fd_modem, my_input, 1);
 
 
 }
-
+#endif
 
 //;--------------------------------------------------------------------
 //;[BalCalcOneLeg]
@@ -1532,7 +1750,7 @@ void *thread_adc_battery(void *arg) {
 		
                	battery_voltage = read_adc(file_adc, par, 0);
 		if( battery_voltage < 1.7  ) {
-			system("aplay /home/root/sons_robot/low_battery.wav &");
+			system("aplay /var/sons_robot/low_battery.wav &");
 			fprintf(stdout, "LOW BATTERY.\n");
 		}
 
@@ -1547,6 +1765,7 @@ void *thread_adc_battery(void *arg) {
 void open_interfaces(void) {
 
 float battery_voltage = 0.0;
+int thread_nb = 0;
 
 // USART0 initialization
 // Communication Parameters: 8 Data, 1 Stop, No Parity
@@ -1556,16 +1775,16 @@ float battery_voltage = 0.0;
 // USART0 Baud rate: 115200
 
 ser_fd_ssc = open(SSCDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
-system("aplay /home/root/sons_robot/serial_connection.wav ");
+system("aplay /var/sons_robot/serial_connection.wav ");
 if( ser_fd_ssc == -1)
     {
         printf( " SSC Serial Not Open \n" );
-	system("aplay /home/root/sons_robot/nok.wav ");
+	system("aplay /var/sons_robot/nok.wav ");
     }
     else
     {
         printf( " SSC Serial Open \n" );
-	system("aplay /home/root/sons_robot/ok.wav ");
+	system("aplay /var/sons_robot/ok.wav ");
         tcgetattr(ser_fd_ssc, &oldtio_ssc);                             // Backup old port settings
         memset(&newtio_ssc, 0, sizeof(newtio_ssc));
 
@@ -1594,16 +1813,16 @@ if( ser_fd_ssc == -1)
 
 
 ser_fd_modem = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
-system("aplay /home/root/sons_robot/bluetooth_connection.wav ");
+system("aplay /var/sons_robot/bluetooth_connection.wav ");
 if( ser_fd_modem == -1)
     {
         printf( " MODEM Serial Not Open \n" );
-	system("aplay /home/root/sons_robot/nok.wav ");
+	system("aplay /var/sons_robot/nok.wav ");
     }
     else
     {
         printf( " MODEM Serial Open \n" );
-	system("aplay /home/root/sons_robot/ok.wav ");
+	system("aplay /var/sons_robot/ok.wav ");
         fcntl(ser_fd_modem, F_SETFL, FNDELAY);
         tcgetattr(ser_fd_modem, &oldtio_modem);                             // Backup old port settings
         memset(&newtio_modem, 0, sizeof(newtio_modem));
@@ -1625,13 +1844,13 @@ if( ser_fd_modem == -1)
 
 	/* US sensor check */
 	file_i2c = open("/dev/i2c-3", O_RDWR);
-	system("aplay /home/root/sons_robot/i2c_connection.wav ");
+	system("aplay /var/sons_robot/i2c_connection.wav ");
 	if (file_i2c < 0) {
 		printf("Could not open i2c-3\n");
-		system("aplay /home/root/sons_robot/nok.wav ");
+		system("aplay /var/sons_robot/nok.wav ");
 	}
 	else { // i2c ok => list the available services
-		system("aplay /home/root/sons_robot/ok.wav ");
+		system("aplay /var/sons_robot/ok.wav ");
 		
 		// US sensor 
 		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE) < 0) {
@@ -1642,7 +1861,7 @@ if( ser_fd_modem == -1)
                         	printf("\n\nwrite bad...\n");
 			}
 			else {
-				if(pthread_create(&p_thread[1], NULL, thread_i2c_ultrasound, (void *)NULL) != 0)
+				if(pthread_create(&p_thread[thread_nb++], NULL, thread_i2c_ultrasound, (void *)NULL) != 0)
       					fprintf(stderr, "Error creating the thread (US)");
 			}
 		}
@@ -1652,32 +1871,41 @@ if( ser_fd_modem == -1)
 
 	/* Battery check */
 	file_adc = open("/dev/twl4030-madc", O_RDWR | O_NONBLOCK);
-	system("aplay /home/root/sons_robot/adc.wav ");
+	system("aplay /var/sons_robot/adc.wav ");
         if (file_adc == -1)
         {
-		system("aplay /home/root/sons_robot/nok.wav ");
+		system("aplay /var/sons_robot/nok.wav ");
                 printf("could not open ADC\n");
         }
 	else {
-		system("aplay /home/root/sons_robot/ok.wav ");
+		system("aplay /var/sons_robot/ok.wav ");
 	}
 
+#ifdef __cplusplus
+        par = (twl4030_madc_user_parms *) malloc(sizeof(struct twl4030_madc_user_parms));
+#else
         par = malloc(sizeof(struct twl4030_madc_user_parms));
+#endif
 
 	battery_voltage = read_adc(file_adc, par, 0);
         if( battery_voltage < 1.7  ) {
-                system("aplay /home/root/sons_robot/low_battery.wav ");
+                system("aplay /var/sons_robot/low_battery.wav ");
                 fprintf(stdout, "LOW BATTERY.\n");
         }
 	else {
-		system("aplay /home/root/sons_robot/battery_ok.wav ");
+		system("aplay /var/sons_robot/battery_ok.wav ");
                 fprintf(stdout, "LOW BATTERY.\n");
 	}
 
 /* Create the thread for battery monitoring */
-if(pthread_create(&p_thread[0], NULL, thread_adc_battery, (void *)NULL) != 0)
+if(pthread_create(&p_thread[thread_nb++], NULL, thread_adc_battery, (void *)NULL) != 0)
       fprintf(stderr, "Error creating the thread");
 
+/* Create the thread for input values */
+#ifdef NEW_INPUT_PROTOCOL
+if(pthread_create(&p_thread[thread_nb++], NULL, getInput, (void *)NULL) != 0)
+      fprintf(stderr, "Error creating the thread");
+#endif
 
 }
 
@@ -1690,82 +1918,6 @@ int wait_counter = 0;
 
 	open_interfaces();
 
-
-// USART0 initialization
-// Communication Parameters: 8 Data, 1 Stop, No Parity
-// USART0 Receiver: On
-// USART0 Transmitter: On
-// USART0 Mode: Asynchronous
-// USART0 Baud rate: 115200
-/*
-ser_fd_ssc = open(SSCDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-if( ser_fd_ssc == -1)
-    {
-        printf( " SSC Serial Not Open \n" );
-    }
-    else
-    {
-        printf( " SSC Serial Open \n" );
-        tcgetattr(ser_fd_ssc, &oldtio_ssc);                             // Backup old port settings
-        memset(&newtio_ssc, 0, sizeof(newtio_ssc));
-
-        newtio_ssc.c_iflag = IGNBRK | IGNPAR;
-        newtio_ssc.c_oflag = 0;
-        newtio_ssc.c_cflag = BAUDRATE | CREAD | CS8 | CLOCAL;
-        newtio_ssc.c_lflag = 0;
-
-        tcflush(ser_fd_ssc, TCIFLUSH);
-        tcsetattr(ser_fd_ssc, TCSANOW, &newtio_ssc);
-
-        memset(&newtio_ssc, 0, sizeof(newtio_ssc));
-        tcgetattr(ser_fd_ssc, &newtio_ssc);
-
-	fcntl(ser_fd_ssc, F_SETFL, FNDELAY);
-
-    }
-*/
-
-
-
-// USART1 initialization
-// Communication Parameters: 8 Data, 1 Stop, No Parity
-// USART1 Receiver: On
-// USART1 Transmitter: On
-// USART1 Mode: Asynchronous
-// USART1 Baud rate: 115200
-
-/*
-ser_fd_modem = open(MODEMDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-if( ser_fd_modem == -1)
-    {
-        printf( " MODEM Serial Not Open \n" );
-    }
-    else
-    {
-        printf( " MODEM Serial Open \n" );
-        fcntl(ser_fd_modem, F_SETFL, FNDELAY);
-	tcgetattr(ser_fd_modem, &oldtio_modem);                             // Backup old port settings
-        memset(&newtio_modem, 0, sizeof(newtio_modem));
-
-        newtio_modem.c_iflag = IGNBRK | IGNPAR;
-        newtio_modem.c_oflag = 0;
-        newtio_modem.c_cflag = BAUDRATE | CREAD | CS8 | CLOCAL;
-        newtio_modem.c_lflag = 0;
-
-        tcflush(ser_fd_modem, TCIFLUSH);
-        tcsetattr(ser_fd_modem, TCSANOW, &newtio_modem);
-
-        memset(&newtio_modem, 0, sizeof(newtio_modem));
-        tcgetattr(ser_fd_modem, &newtio_modem);
-    
-	fcntl(ser_fd_modem, F_SETFL, FNDELAY);
-    }
-*/
-
-
-
 // Global enable interrupts
 
 
@@ -1774,7 +1926,7 @@ if( ser_fd_modem == -1)
 //[INIT]
  
 horizontal_turret = 1500;
-vertical_turret = 2150;
+vertical_turret = 1500; // 2150
 
 //Gait
 GaitType = 1;
@@ -1802,7 +1954,7 @@ ResetInitPos = False;
   
 sleep(1);
 
-system("aplay /home/root/sons_r2d2/r2d211.wav &");
+system("aplay /var/sons/bienvenu a la maison.wav &");
 
 
 GaitSelect();
@@ -1829,9 +1981,10 @@ while (1)
   //Read input
   //GOSUB RCInput1
   
-  
+#ifndef NEW_INPUT_PROTOCOL
   getInput();
-  
+#endif  
+
   /*armWrite();*/                
  
   //Reset IKsolution indicators                                                                                                                                                

@@ -15,8 +15,15 @@
 // For I2C : 
 #include <linux/i2c-dev.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "../adc/gumadc.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 // Declare your global variables here
 
