@@ -119,7 +119,8 @@ extern "C" {
 //[BODY DIMENSIONS]
 #define CoxaLength 29      //Length of the Coxa [mm]
 #define FemurLength 76      //Length of the Femur [mm]
-#define TibiaLength 106     //Lenght of the Tibia [mm]
+//#define TibiaLength 106     //Lenght of the Tibia [mm]
+#define TibiaLength 120     //NEW Lenght of the Tibia [mm]
 
 #define FemurLength2 197      //Length of the Femur [mm]
 #define TibiaLength2 158     //Lenght of the Tibia [mm] 242

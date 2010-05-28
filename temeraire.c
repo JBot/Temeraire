@@ -2,6 +2,8 @@
 #include "temeraire.h"
 
 #define NEW_INPUT_PROTOCOL
+#define FOOT_SENSORS
+
 
  signed int ARMCoxaAngle = 0;   
  signed int ARMFemurAngle = 0;
@@ -222,6 +224,7 @@ char sleeping =1;
 char display1, display2, display3, display4;
 int entier;
 signed int headAngle;
+signed int down_leg_step = 5;
 
 // Serial
 int ser_fd_ssc;
@@ -246,7 +249,15 @@ int us_sensor_light = 255;
 // Thread
 pthread_t p_thread[10];
 
+// Mandibles
+int Mandible = 1500;
 
+// GPIO
+int file_gpio146;
+char gpio146_input[10];
+
+// Legs sensors
+char leg_on_floor = 1;
 
 
 /* Functions */
@@ -509,7 +520,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = FALSE;   
    TLDivFactor = 16;    
    StepsInGait = 18;      
-    NomGaitSpeed = 100;
+    NomGaitSpeed = 250;
   }
 
  if(GaitType == 8) { // TEST
@@ -524,7 +535,7 @@ void GaitSelect(void) {
    HalfLiftHeigth = FALSE;
    TLDivFactor = 10;
    StepsInGait = 12;
-    NomGaitSpeed = 120;
+    NomGaitSpeed = 200;
   }
 
   
@@ -580,7 +591,7 @@ void GaitSelect(void) {
 return;
 }
 
-
+#ifdef FOOT_SENSORS
 /**--------------------------------------------------------------------
 * PEUT ETRE UTILISER CABS AU LIEU DE ABS
 [GAIT]*/
@@ -635,61 +646,77 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
       else {     
 
          //Leg front down position
-         if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos)) && GaitPosYY<0) {
-         GaitPosX = TravelLengthX/2;
-          GaitPosY = 0;
+         //if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos)) && GaitPosYY<0) {
+	if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
+
+	if(GaitLegNr == LFGaitLegNr) { // uniquement la patte avant gauche pour l'instant
+		leg_on_floor = 0;
+		file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
+                read(file_gpio146, gpio146_input, 1);
+		close(file_gpio146);
+		printf("gpio146_input[0] = %d \n",gpio146_input[0]);
+                if(gpio146_input[0] == 48) { // leg on the floor
+			leg_on_floor = 1;
+			printf("GaitPosY = %d \n",GaitPosY);
+			GaitPosY = GaitPosYY;
+                }
+                else { // must down the leg
+
+                GaitPosX = TravelLengthX/2;
+                GaitPosY = GaitPosYY + down_leg_step;
+                GaitPosZ = TravelLengthZ/2;
+                GaitRotY = TravelRotationY/2;
+
+
+                }
+
+        }
+	else { // Pour les autres pattes, fonctionnement normal
+	GaitPosX = TravelLengthX/2;
+          GaitPosY = GaitPosYY + LegLiftHeight/((signed int)HalfLiftHeigth+1);//down_leg_step;
           GaitPosZ = TravelLengthZ/2;
           GaitRotY = TravelRotationY/2;
-         }
+	//printf("Leg go down \n");
+        } 
+
+	}
          //Move body forward     
          else {
           GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
-          GaitPosY = 0;
+          GaitPosY = GaitPosYY;
           GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
           GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+	//printf("Move body \n");
         }
       }
     }
   }
   }
-  
-  
-   
-  //Advance to the next step
-  if (LastLeg) {   //The last leg in this step
+  /*
+  printf("leg_on_floor = %d \n",leg_on_floor);
+  printf("GaitStep = %d \n",GaitStep); 
+*/
+  //Advance to the next step !!!!!!!! TO CHANGE !!!!!!!!
+  if (LastLeg && (leg_on_floor == 1)) {   //The last leg in this step and legs are on the floor
     GaitStep = GaitStep+1;
     if (GaitStep>StepsInGait) {
       GaitStep = 1;
     }
+	//printf(" \n");
   }
        
  return;
 
 }
 
+#else 
+
+#endif
+
 /**--------------------------------------------------------------------
 [GAIT Sequence]*/
 void GaitSeq(void) {
   //Calculate Gait sequence
-  
-  if(GaitType == 9) {
-        if(GaitStep < 8){
-                BodyPosX = -20;
-                if(GaitStep < 4)
-                        BodyPosZ = -20;
-                else
-                        BodyPosZ = 20;        
-        }
-        else {
-                BodyPosX = 20;
-                if(GaitStep > 10)
-                        BodyPosZ = -20;
-                else
-                        BodyPosZ = 20;        
-        }
-  
-  }
-  
   
   LastLeg = FALSE;
   Gait(LRGaitLegNr, LRGaitPosX, LRGaitPosY, LRGaitPosZ, LRGaitRotY);
@@ -705,13 +732,11 @@ void GaitSeq(void) {
   RFGaitPosZ = GaitPosZ;
   RFGaitRotY = GaitRotY;
   
-  if(GaitType != 9) { 
   Gait(LMGaitLegNr, LMGaitPosX, LMGaitPosY, LMGaitPosZ, LMGaitRotY);
   LMGaitPosX = GaitPosX;
   LMGaitPosY = GaitPosY;
   LMGaitPosZ = GaitPosZ;
   LMGaitRotY = GaitRotY;   
-  }
   
   Gait(RRGaitLegNr, RRGaitPosX, RRGaitPosY, RRGaitPosZ, RRGaitRotY);
   RRGaitPosX = GaitPosX;
@@ -719,24 +744,22 @@ void GaitSeq(void) {
   RRGaitPosZ = GaitPosZ;
   RRGaitRotY = GaitRotY;   
   
-  if(GaitType == 9) {
-  LastLeg = TRUE;
-  }
   Gait(LFGaitLegNr, LFGaitPosX, LFGaitPosY, LFGaitPosZ, LFGaitRotY);
   LFGaitPosX = GaitPosX;
   LFGaitPosY = GaitPosY;
   LFGaitPosZ = GaitPosZ;
   LFGaitRotY = GaitRotY;   
-  
-  if(GaitType != 9) {
+  printf("LFGaitPosY = %d \n",LFGaitPosY);  
+
   LastLeg = TRUE;
   Gait(RMGaitLegNr, RMGaitPosX, RMGaitPosY, RMGaitPosZ, RMGaitRotY);
   RMGaitPosX = GaitPosX;
   RMGaitPosY = GaitPosY;
   RMGaitPosZ = GaitPosZ;
   RMGaitRotY = GaitRotY;
-  }
-     
+  
+  printf("leg_on_floor = %d \n",leg_on_floor);
+  printf("GaitStep = %d \n",GaitStep);   
 return;
 }
 
@@ -1005,29 +1028,29 @@ void firstposition(void) {
 if(starting == 0) {
 
 /* VRAIE POSITION */ 
-RFPosX = 70;      //Start positions of the Right Front leg
+RFPosX = 90;      //Start positions of the Right Front leg
 RFPosY = 25;
-RFPosZ = -31;
+RFPosZ = -41;
 
 RMPosX = 100;   //Start positions of the Right Middle leg
 RMPosY = 25;
-RMPosZ = 10;	
+RMPosZ = 0;	
 
-RRPosX = 63;    //Start positions of the Right Rear leg
+RRPosX = 83;    //Start positions of the Right Rear leg
 RRPosY = 25;
-RRPosZ = 31;
+RRPosZ = 41;
 
-LFPosX = 70;      //Start positions of the Left Front leg
+LFPosX = 90;      //Start positions of the Left Front leg
 LFPosY = 25;
-LFPosZ = -31;
+LFPosZ = -41;
 
 LMPosX = 100;   //Start positions of the Left Middle leg
 LMPosY = 25;
-LMPosZ = 10;
+LMPosZ = 0;
 
-LRPosX = 63;      //Start positions of the Left Rear leg
+LRPosX = 83;      //Start positions of the Left Rear leg
 LRPosY = 25;
-LRPosZ = 31;
+LRPosZ = 41;
 
 
 /*
@@ -1090,7 +1113,7 @@ starting++;
 }
 else if( starting == 1 ) {              
 
-BodyPosYint = 50;
+BodyPosYint = 100;
 NomGaitSpeed = 500;
 starting++;
 
@@ -1140,7 +1163,7 @@ void ServoDriver(void){
 //            LEG[x].Coxa.Error = true;
 //        temp = max(min(temp, 2500),500);
 //        GotoXY(80,1+LEG[x].Coxa.Pin); printf("#%dP%d   ", LEG[x].Coxa.Pin, temp);
-	temp = (int)( (float)(-RFCoxaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET8;
+/*	temp = (int)( (float)(-RFCoxaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET8;
         sprintf(Serout, "%s #%dP%d", Serout, 8, temp);
 
 	temp = (int)( (float)(-RFFemurAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET9;
@@ -1171,7 +1194,7 @@ void ServoDriver(void){
 
         temp = (int)( (float)(-RRTibiaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET2;
         sprintf(Serout, "%s #%dP%d", Serout, 2, temp);
-
+*/
 
 
   //Front Left leg
@@ -1187,7 +1210,7 @@ void ServoDriver(void){
         
 
   //Middle Left leg    
-
+/*
         
 	temp = (int)( (float)(LMCoxaAngle + 90)/0.10588238 ) + 650 + SERVO_OFFSET20;
         sprintf(Serout, "%s #%dP%d", Serout, 20, temp);
@@ -1210,14 +1233,19 @@ void ServoDriver(void){
         temp = (int)( (float)(LRTibiaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET18;
         sprintf(Serout, "%s #%dP%d", Serout, 18, temp);
 
-  /* Head */ 
-
-	temp = (int) ( (float)(BodyRotZ + 90)/0.10588238 ) + 650;
+  // Head  
+	// 3 DOFs
+	temp = (int) ( (float)(BodyRotZ*7 + 90)/0.10588238 ) + 650;
         sprintf(Serout, "%s #%dP%d", Serout, 28, temp);
-        temp = (int) ( (float)(BodyRotY + 90)/0.10588238 ) + 650;
+        temp = (int) ( (float)(-BodyRotY*4 + 90)/0.10588238 ) + 650;
         sprintf(Serout, "%s #%dP%d", Serout, 29, temp);
-	temp = (int) ( (float)(BodyRotX + 90)/0.10588238 ) + 650;
+	temp = (int) ( (float)(-BodyRotX*4 + 90)/0.10588238 ) + 650;
         sprintf(Serout, "%s #%dP%d", Serout, 30, temp);
+	// Mandibles
+	temp = (int) Mandible;
+        sprintf(Serout, "%s #%dP%d", Serout, 12, temp);
+	sprintf(Serout, "%s #%dP%d", Serout, 13, 3000-temp);
+*/
 /*
 	temp = (int)( (float)(headAngle +90)/0.10588238 ) + 650 + 0;
         sprintf(Serout, "%s #%dP%d", Serout, 30, temp);
@@ -1384,22 +1412,22 @@ if( wait_command_flag == 0) {
 
                                         break;
                                 case 'B' : // BodyPosX
-					BodyPosX = temp_input;
+					BodyPosXint = temp_input;
                                         break;
                                 case 'b' : 
-					BodyPosX = temp_input;
+					BodyPosXint = temp_input;
                                         break;
                                 case 'C' : // BodyPosY
-					BodyPosY = temp_input;
+					BodyPosYint = temp_input;
                                         break;
                                 case 'c' : 
-					BodyPosY = temp_input;
+					BodyPosYint = temp_input;
                                         break;
                                 case 'D' : // BodyPosZ
-					BodyPosZ = temp_input;
+					BodyPosZint = temp_input;
                                         break;
                                 case 'd' : 
-					BodyPosZ = temp_input;
+					BodyPosZint = temp_input;
                                         break;
                                 case 'E' : // BodyRotX
 					BodyRotX = temp_input;
@@ -1431,6 +1459,12 @@ if( wait_command_flag == 0) {
                                         break;
                                 case 'i' : 
 					NomGaitSpeed = temp_input;
+                                        break;
+				case 'J' : // Mandibles
+                                        Mandible = temp_input;
+                                        break;
+				case 'j' :
+                                        Mandible = temp_input;
                                         break;
                                 case 'O' : // ON / OFF
 					sleeping = 0;
@@ -1907,6 +1941,19 @@ if(pthread_create(&p_thread[thread_nb++], NULL, getInput, (void *)NULL) != 0)
       fprintf(stderr, "Error creating the thread");
 #endif
 
+/*
+file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
+printf("Opening GPIO 146 ... ");
+if (file_gpio146 == -1)
+{
+	printf("could not open GPIO146\n");
+}
+else {
+	printf("OK \n");
+}
+read(file_gpio146, gpio146_input, 1);
+*/
+
 }
 
 
@@ -1931,7 +1978,7 @@ vertical_turret = 1500; // 2150
 //Gait
 GaitType = 1;
 BalanceMode = 0;
-LegLiftHeight = 50;
+LegLiftHeight = 100;
 GaitStep = 1;
 Mode = 1;
 
