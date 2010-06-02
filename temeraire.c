@@ -159,6 +159,7 @@ signed int TotalY;       //Total Y distance between the center of the body and t
 //[gait]
 char GaitType;   //Gait type
 int NomGaitSpeed;   //Nominal speed of the gait
+int ActualGaitSpeed;
 
 signed int LegLiftHeight;   //Current Travel height
 signed int TravelLengthX;   //Current Travel length X
@@ -224,7 +225,7 @@ char sleeping =1;
 char display1, display2, display3, display4;
 int entier;
 signed int headAngle;
-signed int down_leg_step = 5;
+signed int down_leg_step = 2;
 
 // Serial
 int ser_fd_ssc;
@@ -586,7 +587,7 @@ void GaitSelect(void) {
     NomGaitSpeed = 400;
   }
   
-
+ActualGaitSpeed = NomGaitSpeed;
 
 return;
 }
@@ -659,15 +660,17 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 			leg_on_floor = 1;
 			printf("GaitPosY = %d \n",GaitPosY);
 			GaitPosY = GaitPosYY;
+			// remettre la vitesse normale
+			ActualGaitSpeed = NomGaitSpeed;
                 }
                 else { // must down the leg
 
-                GaitPosX = TravelLengthX/2;
-                GaitPosY = GaitPosYY + down_leg_step;
-                GaitPosZ = TravelLengthZ/2;
-                GaitRotY = TravelRotationY/2;
-
-
+                	GaitPosX = TravelLengthX/2;
+                	GaitPosY = GaitPosYY + down_leg_step;
+                	GaitPosZ = TravelLengthZ/2;
+                	GaitRotY = TravelRotationY/2;
+			// Mettre une vitesse rapide pour descendre la patte
+			ActualGaitSpeed = 30;
                 }
 
         }
@@ -682,10 +685,19 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 	}
          //Move body forward     
          else {
-          GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
-          GaitPosY = GaitPosYY;
-          GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
-          GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+	
+		if(leg_on_floor == 0) { // Leg not on the floor
+			GaitPosX = GaitPosXX;
+                        GaitPosY = GaitPosYY;
+                        GaitPosZ = GaitPosZZ;
+                        GaitRotY = GaitRotYY;
+		}
+		else {
+          		GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
+          		GaitPosY = GaitPosYY;
+          		GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
+          		GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+		}
 	//printf("Move body \n");
         }
       }
@@ -1109,14 +1121,14 @@ Ybase = 72;
 Zbase = 0;
 #endif
 starting++;
-
+ActualGaitSpeed = NomGaitSpeed;
 }
 else if( starting == 1 ) {              
 
 BodyPosYint = 100;
 NomGaitSpeed = 500;
 starting++;
-
+ActualGaitSpeed = NomGaitSpeed;
 }
 else if(starting == 2) {
    GaitSelect();
@@ -1163,7 +1175,7 @@ void ServoDriver(void){
 //            LEG[x].Coxa.Error = true;
 //        temp = max(min(temp, 2500),500);
 //        GotoXY(80,1+LEG[x].Coxa.Pin); printf("#%dP%d   ", LEG[x].Coxa.Pin, temp);
-/*	temp = (int)( (float)(-RFCoxaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET8;
+	temp = (int)( (float)(-RFCoxaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET8;
         sprintf(Serout, "%s #%dP%d", Serout, 8, temp);
 
 	temp = (int)( (float)(-RFFemurAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET9;
@@ -1194,7 +1206,7 @@ void ServoDriver(void){
 
         temp = (int)( (float)(-RRTibiaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET2;
         sprintf(Serout, "%s #%dP%d", Serout, 2, temp);
-*/
+
 
 
   //Front Left leg
@@ -1210,7 +1222,7 @@ void ServoDriver(void){
         
 
   //Middle Left leg    
-/*
+
         
 	temp = (int)( (float)(LMCoxaAngle + 90)/0.10588238 ) + 650 + SERVO_OFFSET20;
         sprintf(Serout, "%s #%dP%d", Serout, 20, temp);
@@ -1233,6 +1245,7 @@ void ServoDriver(void){
         temp = (int)( (float)(LRTibiaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET18;
         sprintf(Serout, "%s #%dP%d", Serout, 18, temp);
 
+/*
   // Head  
 	// 3 DOFs
 	temp = (int) ( (float)(BodyRotZ*7 + 90)/0.10588238 ) + 650;
@@ -1326,7 +1339,7 @@ void ServoDriver(void){
   //PrevSSCTime = SSCTime
 
   // Time and <CR>
-    sprintf(Serout, "%s T%d\r", Serout, NomGaitSpeed);
+    sprintf(Serout, "%s T%d\r", Serout, ActualGaitSpeed);
 
     // write to serial if connected
     if ( ser_fd_ssc )
@@ -1976,7 +1989,7 @@ horizontal_turret = 1500;
 vertical_turret = 1500; // 2150
 
 //Gait
-GaitType = 1;
+GaitType = 8;
 BalanceMode = 0;
 LegLiftHeight = 100;
 GaitStep = 1;
@@ -2127,7 +2140,7 @@ while (1)
    }
 */ 
 	for(wait_counter = 0; wait_counter < 10; wait_counter++) {
-   		usleep(NomGaitSpeed*100);
+   		usleep(ActualGaitSpeed*100);
 		if ( us_sensor_distance < 15 && TravelLengthZ < 0) {
 			TravelLengthZ = 0;
 		}
