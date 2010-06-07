@@ -2,7 +2,7 @@
 #include "temeraire.h"
 
 #define NEW_INPUT_PROTOCOL
-#define FOOT_SENSORS
+//#define FOOT_SENSORS
 
 
  signed int ARMCoxaAngle = 0;   
@@ -757,6 +757,99 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 }
 
 #else 
+
+/**--------------------------------------------------------------------
+* PEUT ETRE UTILISER CABS AU LIEU DE ABS
+[GAIT]*/
+void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int GaitPosZZ, signed int GaitRotYY) {
+   if (Mode == 3) {
+      if (TestLeg == GaitLegNr) {
+         GaitPosX = TravelLengthX;     
+            GaitPosY = -TravelHeightY;
+            GaitPosZ = TravelLengthZ;
+            GaitRotY = 0;
+      }
+   }
+   else {
+  //Check IF the Gait is in motion
+  if( (abs(TravelLengthX)>TravelDeadZone) || (abs(TravelLengthZ)>TravelDeadZone) || (abs(TravelRotationY)>TravelDeadZone) ) {
+         //putchar('J');
+         GaitInMotion = 1;
+  }
+  else {
+         GaitInMotion = 0;
+  }
+
+  //Leg middle up position
+      //Gait in motion                                            Gait NOT in motion, return to home position
+  if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
+    GaitPosX = 0;
+    GaitPosY = -LegLiftHeight;
+    GaitPosZ = 0;
+    GaitRotY = 0;
+    
+  }
+  else {
+
+    //Optional Half heigth Rear
+    if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
+     GaitPosX = -TravelLengthX/2;
+      GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+      GaitPosZ = -TravelLengthZ/2;
+      GaitRotY = -TravelRotationY/2;
+      
+      }
+     else {
+      
+     //Optional half heigth front
+      if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
+        GaitPosX = TravelLengthX/2;
+        GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+        GaitPosZ = TravelLengthZ/2;
+        GaitRotY = TravelRotationY/2;
+        
+        }
+      else {     
+
+         //Leg front down position
+         if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos)) && GaitPosYY<0) {
+	//if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
+
+			GaitPosX = TravelLengthX/2;
+          		GaitPosY = 0;
+          		GaitPosZ = TravelLengthZ/2;
+          		GaitRotY = TravelRotationY/2;
+			//printf("Leg go down \n");
+	}
+         //Move body forward     
+         else {
+	
+          	GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
+          	GaitPosY = 0;
+          	GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
+          	GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+	//printf("Move body \n");
+        }
+      }
+    }
+  }
+  }
+  /*
+  printf("leg_on_floor = %d \n",leg_on_floor);
+  printf("GaitStep = %d \n",GaitStep); 
+*/
+  //Advance to the next step 
+  if (LastLeg)) {   //The last leg in this step
+    GaitStep = GaitStep+1;
+    if (GaitStep>StepsInGait) {
+      GaitStep = 1;
+    }
+	//printf(" \n");
+  }
+       
+ return;
+
+}
 
 #endif
 
