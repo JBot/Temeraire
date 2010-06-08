@@ -2,7 +2,7 @@
 #include "temeraire.h"
 
 #define NEW_INPUT_PROTOCOL
-//#define FOOT_SENSORS
+#define FOOT_SENSORS
 
 
 signed int ARMCoxaAngle = 0;   
