@@ -18,57 +18,57 @@ char indexarmtab;
 
 //====================================================================
 //[ANGLES]
-signed int RFCoxaAngle;   //Actual Angle of the Right Front Leg
-signed int RFFemurAngle;
-signed int RFTibiaAngle;
+signed int RFCoxaAngle = 0;   //Actual Angle of the Right Front Leg
+signed int RFFemurAngle = 0;
+signed int RFTibiaAngle = 0;
 
-signed int RMCoxaAngle;   //Actual Angle of the Right Middle Leg
-signed int RMFemurAngle;
-signed int RMTibiaAngle;
+signed int RMCoxaAngle = 0;   //Actual Angle of the Right Middle Leg
+signed int RMFemurAngle = 0;
+signed int RMTibiaAngle = 0;
 
-signed int RRCoxaAngle;   //Actual Angle of the Right Rear Leg
-signed int RRFemurAngle;
-signed int RRTibiaAngle;
+signed int RRCoxaAngle = 0;   //Actual Angle of the Right Rear Leg
+signed int RRFemurAngle = 0;
+signed int RRTibiaAngle = 0;
 
-signed int LFCoxaAngle;   //Actual Angle of the Left Front Leg
-signed int LFFemurAngle;
-signed int LFTibiaAngle;
+signed int LFCoxaAngle = 0;   //Actual Angle of the Left Front Leg
+signed int LFFemurAngle = 0;
+signed int LFTibiaAngle = 0;
 
-signed int LMCoxaAngle;   //Actual Angle of the Left Middle Leg
-signed int LMFemurAngle;
-signed int LMTibiaAngle;
+signed int LMCoxaAngle = 0;   //Actual Angle of the Left Middle Leg
+signed int LMFemurAngle = 0;
+signed int LMTibiaAngle = 0;
 
-signed int LRCoxaAngle;   //Actual Angle of the Left Rear Leg
-signed int LRFemurAngle;
-signed int LRTibiaAngle;
+signed int LRCoxaAngle = 0;   //Actual Angle of the Left Rear Leg
+signed int LRFemurAngle = 0;
+signed int LRTibiaAngle = 0;
 
 signed int horizontal_turret;
 signed int vertical_turret;
 //--------------------------------------------------------------------
 //[POSITIONS]
-signed int RFPosX;      //Actual Position of the Right Front Leg
-signed int RFPosY;
-signed int RFPosZ;
+signed int RFPosX = 0;      //Actual Position of the Right Front Leg
+signed int RFPosY = 0;
+signed int RFPosZ = 0;
 
-signed int RMPosX;      //Actual Position of the Right Middle Leg
-signed int RMPosY;
-signed int RMPosZ;
+signed int RMPosX = 0;      //Actual Position of the Right Middle Leg
+signed int RMPosY = 0;
+signed int RMPosZ = 0;
 
-signed int RRPosX;      //Actual Position of the Right Rear Leg
-signed int RRPosY;
-signed int RRPosZ;
+signed int RRPosX = 0;      //Actual Position of the Right Rear Leg
+signed int RRPosY = 0;
+signed int RRPosZ = 0;
 
-signed int LFPosX;      //Actual Position of the Left Front Leg
-signed int LFPosY;
-signed int LFPosZ;
+signed int LFPosX = 0;      //Actual Position of the Left Front Leg
+signed int LFPosY = 0;
+signed int LFPosZ = 0;
 
-signed int LMPosX;      //Actual Position of the Left Middle Leg
-signed int LMPosY;
-signed int LMPosZ;
+signed int LMPosX = 0;      //Actual Position of the Left Middle Leg
+signed int LMPosY = 0;
+signed int LMPosZ = 0;
 
-signed int LRPosX;      //Actual Position of the Left Rear Leg
-signed int LRPosY;
-signed int LRPosZ;
+signed int LRPosX = 0;      //Actual Position of the Left Rear Leg
+signed int LRPosY = 0;
+signed int LRPosZ = 0;
 
 
 //--------------------------------------------------------------------
@@ -89,19 +89,19 @@ float CosA;      //Output Cosinus of the given Angle
 float BoogTan;      //Output BOOGTAN2(X/Y)
 
 //Body position
-signed int BodyPosX;      //Global Input for the position of the body
-signed int BodyPosY;
-signed int BodyPosZ;
+signed int BodyPosX = 0;      //Global Input for the position of the body
+signed int BodyPosY = 0;
+signed int BodyPosZ = 0;
 
-signed int BodyPosXint;
-signed int BodyPosZint;  
-signed int BodyPosYint;
+signed int BodyPosXint = 0;
+signed int BodyPosZint = 0; 
+signed int BodyPosYint = 0;
 
 
 //Body Inverse Kinematics
-signed char BodyRotX;          //Global Input pitch of the body
-signed char BodyRotY;          //Global Input rotation of the body
-signed char BodyRotZ;          //Global Input roll of the body
+signed char BodyRotX = 0;          //Global Input pitch of the body
+signed char BodyRotY = 0;          //Global Input rotation of the body
+signed char BodyRotZ = 0;          //Global Input roll of the body
 //signed int PosX;               //Input position of the feet X
 //signed int PosZ;               //Input position of the feet Z
 //signed int PosY;               //Input position of the feet Y
@@ -147,14 +147,14 @@ char TurnOff;        //Mark to turn off Phoenix
 //--------------------------------------------------------------------
 //[Balance]
 char BalanceMode;
-signed int TravelHeightY;
-signed int TotalTransX;
-signed int TotalTransZ;
-signed int TotalTransY;
-signed int TotalYBal;
-signed int TotalXBal;
-signed int TotalZBal;
-signed int TotalY;       //Total Y distance between the center of the body and the feet
+signed int TravelHeightY = 0;
+signed int TotalTransX = 0;
+signed int TotalTransZ = 0;
+signed int TotalTransY = 0;
+signed int TotalYBal = 0;
+signed int TotalXBal = 0;
+signed int TotalZBal = 0;
+signed int TotalY = 0;       //Total Y distance between the center of the body and the feet
 
 //[gait]
 char GaitType;   //Gait type
@@ -175,50 +175,50 @@ char StepsInGait;   //Number of steps in gait
 char LastLeg;      //TRUE when the current leg is the last leg of the sequence
 char GaitStep;   //Actual Gait step
 
-signed int RFGaitLegNr;   //Init position of the leg
-signed int RMGaitLegNr;   //Init position of the leg
-signed int RRGaitLegNr;   //Init position of the leg
-signed int LFGaitLegNr;   //Init position of the leg
-signed int LMGaitLegNr;   //Init position of the leg
-signed int LRGaitLegNr;   //Init position of the leg
+signed int RFGaitLegNr = 0;   //Init position of the leg
+signed int RMGaitLegNr = 0;   //Init position of the leg
+signed int RRGaitLegNr = 0;   //Init position of the leg
+signed int LFGaitLegNr = 0;   //Init position of the leg
+signed int LMGaitLegNr = 0;   //Init position of the leg
+signed int LRGaitLegNr = 0;   //Init position of the leg
 
 //char GaitLegNr;   //Input Number of the leg
 signed int TravelMulti;   //Multiplier for the length of the step
 
-signed int RFGaitPosX;   //Relative position corresponding to the Gait
-signed int RFGaitPosY;
-signed int RFGaitPosZ;
-signed int RFGaitRotY;   //Relative rotation corresponding to the Gait
+signed int RFGaitPosX = 0;   //Relative position corresponding to the Gait
+signed int RFGaitPosY = 0;
+signed int RFGaitPosZ = 0;
+signed int RFGaitRotY = 0;   //Relative rotation corresponding to the Gait
 
-signed int RMGaitPosX;
-signed int RMGaitPosY;
-signed int RMGaitPosZ;
-signed int RMGaitRotY;
+signed int RMGaitPosX = 0;
+signed int RMGaitPosY = 0;
+signed int RMGaitPosZ = 0;
+signed int RMGaitRotY = 0;
 
-signed int RRGaitPosX;
-signed int RRGaitPosY;
-signed int RRGaitPosZ;
-signed int RRGaitRotY;
+signed int RRGaitPosX = 0;
+signed int RRGaitPosY = 0;
+signed int RRGaitPosZ = 0;
+signed int RRGaitRotY = 0;
 
-signed int LFGaitPosX;
-signed int LFGaitPosY;
-signed int LFGaitPosZ;
-signed int LFGaitRotY;
+signed int LFGaitPosX = 0;
+signed int LFGaitPosY = 0;
+signed int LFGaitPosZ = 0;
+signed int LFGaitRotY = 0;
 
-signed int LMGaitPosX;
-signed int LMGaitPosY;
-signed int LMGaitPosZ;
-signed int LMGaitRotY;
+signed int LMGaitPosX = 0;
+signed int LMGaitPosY = 0;
+signed int LMGaitPosZ = 0;
+signed int LMGaitRotY = 0;
 
-signed int LRGaitPosX;
-signed int LRGaitPosY;
-signed int LRGaitPosZ;
-signed int LRGaitRotY;
+signed int LRGaitPosX = 0;
+signed int LRGaitPosY = 0;
+signed int LRGaitPosZ = 0;
+signed int LRGaitRotY = 0;
 
-signed int GaitPosX;   //In-/Output Pos X of feet
-signed int GaitPosY;   //In-/Output Pos Y of feet
-signed int GaitPosZ;   //In-/Output Pos Z of feet
-signed int GaitRotY;   //In-/Output Rotation Y of feet
+signed int GaitPosX = 0;   //In-/Output Pos X of feet
+signed int GaitPosY = 0;   //In-/Output Pos Y of feet
+signed int GaitPosZ = 0;   //In-/Output Pos Z of feet
+signed int GaitRotY = 0;   //In-/Output Rotation Y of feet
 
 char starting =0;
 char sleeping =1;
@@ -650,72 +650,78 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 
 					//Leg front down position
 					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
-						/*
-						   if(GaitLegNr == LFGaitLegNr) { // uniquement la patte avant gauche pour l'instant
-						   leg_on_floor = 0;
-						   file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
-						   read(file_gpio146, gpio146_input, 1);
-						   close(file_gpio146);
-						   printf("gpio146_input[0] = %d \n",gpio146_input[0]);
-						   if(gpio146_input[0] == 48) { // leg on the floor
-						   leg_on_floor = 1;
-						   printf("GaitPosY = %d \n",GaitPosY);
-						   GaitPosY = GaitPosYY;
-						// remettre la vitesse normale
-						ActualGaitSpeed = NomGaitSpeed;
-						}
-						else { // must down the leg
 
-						GaitPosX = TravelLengthX/2;
-						GaitPosY = GaitPosYY + down_leg_step;
-						GaitPosZ = TravelLengthZ/2;
-						GaitRotY = TravelRotationY/2;
-						// Mettre une vitesse rapide pour descendre la patte
-						ActualGaitSpeed = DOWN_SENSOR_SPEED;
-						}
+						if(GaitLegNr == LFGaitLegNr) { // uniquement la patte avant gauche pour l'instant
+							leg_on_floor = 0;
+							file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio146, gpio146_input, 1);
+							close(file_gpio146);
+							printf("gpio146_input[0] = %d \n",gpio146_input[0]);
+							if(gpio146_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								GaitPosX = TravelLengthX/2;
+                                                                GaitPosZ = TravelLengthZ/2;
+                                                                GaitRotY = TravelRotationY/2;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
+							}
+							else { // must down the leg
+
+								GaitPosX = TravelLengthX/2;
+								GaitPosY = GaitPosYY + down_leg_step;
+								GaitPosZ = TravelLengthZ/2;
+								GaitRotY = TravelRotationY/2;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
+							}
 
 						}
 						else {
 
 
 
-						if(GaitLegNr == RFGaitLegNr) { // uniquement la patte avant droite pour l'instant
-						leg_on_floor = 0;
-						file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
-						read(file_gpio147, gpio147_input, 1);
-						close(file_gpio147);
-						printf("gpio147_input[0] = %d \n",gpio147_input[0]);
-						if(gpio147_input[0] == 48) { // leg on the floor
-						leg_on_floor = 1;
-						printf("GaitPosY = %d \n",GaitPosY);
-						GaitPosY = GaitPosYY;
-						// remettre la vitesse normale
-						ActualGaitSpeed = NomGaitSpeed;
-						}
-						else { // must down the leg
+							if(GaitLegNr == RFGaitLegNr) { // uniquement la patte avant droite pour l'instant
+								leg_on_floor = 0;
+								file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio147, gpio147_input, 1);
+								close(file_gpio147);
+								printf("gpio147_input[0] = %d \n",gpio147_input[0]);
+								if(gpio147_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 3;
+									GaitPosX = TravelLengthX/2;
+									GaitPosZ = TravelLengthZ/2;
+									GaitRotY = TravelRotationY/2;
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
 
-						GaitPosX = TravelLengthX/2;
-						GaitPosY = GaitPosYY + down_leg_step;
-						GaitPosZ = TravelLengthZ/2;
-						GaitRotY = TravelRotationY/2;
-						// Mettre une vitesse rapide pour descendre la patte
-						ActualGaitSpeed = DOWN_SENSOR_SPEED;
-						}
+									GaitPosX = TravelLengthX/2;
+									GaitPosY = GaitPosYY + down_leg_step;
+									GaitPosZ = TravelLengthZ/2;
+									GaitRotY = TravelRotationY/2;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
 
-						}
+							}
 
 
-						else { // Pour les autres pattes, fonctionnement normal
-						 */
+							else { // Pour les autres pattes, fonctionnement normal
 
-						GaitPosX = TravelLengthX/2;
-						GaitPosY = GaitPosYY + LegLiftHeight/((signed int)HalfLiftHeigth+1);//down_leg_step;
-						GaitPosZ = TravelLengthZ/2;
-						GaitRotY = TravelRotationY/2;
-						//printf("Leg go down \n");
-						/*        	}
-								} 
-						 */
+
+								GaitPosX = TravelLengthX/2;
+								GaitPosY = GaitPosYY + LegLiftHeight/((signed int)HalfLiftHeigth+1);//down_leg_step;
+								GaitPosZ = TravelLengthZ/2;
+								GaitRotY = TravelRotationY/2;
+								//printf("Leg go down \n");
+							}
+						} 
+
 					}
 					//Move body forward     
 					else {
@@ -1167,27 +1173,27 @@ void firstposition(void) {
 	if(starting == 0) {
 
 		/* VRAIE POSITION */ 
-		RFPosX = 90;      //Start positions of the Right Front leg
+		RFPosX = 60;      //Start positions of the Right Front leg
 		RFPosY = 25;
-		RFPosZ = -61;
+		RFPosZ = -81;
 
-		RMPosX = 100;   //Start positions of the Right Middle leg
+		RMPosX = 90;   //Start positions of the Right Middle leg
 		RMPosY = 25;
 		RMPosZ = -10;	
 
-		RRPosX = 83;    //Start positions of the Right Rear leg
+		RRPosX = 73;    //Start positions of the Right Rear leg
 		RRPosY = 25;
 		RRPosZ = 61;
 
-		LFPosX = 90;      //Start positions of the Left Front leg
+		LFPosX = 60;      //Start positions of the Left Front leg
 		LFPosY = 25;
-		LFPosZ = -61;
+		LFPosZ = -81;
 
-		LMPosX = 100;   //Start positions of the Left Middle leg
+		LMPosX = 90;   //Start positions of the Left Middle leg
 		LMPosY = 25;
 		LMPosZ = -10;
 
-		LRPosX = 83;      //Start positions of the Left Rear leg
+		LRPosX = 73;      //Start positions of the Left Rear leg
 		LRPosY = 25;
 		LRPosZ = 61;
 
