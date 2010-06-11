@@ -651,7 +651,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 					//Leg front down position
 					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
 
-						if(GaitLegNr == LFGaitLegNr) { // uniquement la patte avant gauche pour l'instant
+						if(GaitLegNr == LRGaitLegNr) { // uniquement la patte avant gauche pour l'instant
 							leg_on_floor = 0;
 							file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio146, gpio146_input, 1);
@@ -682,7 +682,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 
 
 
-							if(GaitLegNr == RFGaitLegNr) { // uniquement la patte avant droite pour l'instant
+							if(GaitLegNr == RRGaitLegNr) { // uniquement la patte avant droite pour l'instant
 								leg_on_floor = 0;
 								file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
 								read(file_gpio147, gpio147_input, 1);
