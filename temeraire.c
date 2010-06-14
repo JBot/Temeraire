@@ -1595,7 +1595,9 @@ void *getInput(void *args) {
 								break;
 							case 'H' : // GaitType
 								GaitType = temp_input;
+								leg_on_floor = 1;
 								GaitSelect();
+								leg_on_floor = 1;
 								break;
 							case 'h' : 
 
@@ -1619,6 +1621,7 @@ void *getInput(void *args) {
 							case 'O' : // ON / OFF
 								sleeping = 0;
 								starting = 0;
+								leg_on_floor = 1;
 								system("aplay /var/sons_r2d2/r2d25.wav &");
 								break;
 							case 'o' : // OFF
@@ -1628,6 +1631,7 @@ void *getInput(void *args) {
 								TravelLengthX = 0;
 								sleeping = 1;
 								BodyPosYint = 0;
+								leg_on_floor = 1;
 								system("aplay /var/sons_r2d2/r2d28.wav &");
 								break;
 							case 'R' : // RotationPoint
