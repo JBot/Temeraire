@@ -258,6 +258,14 @@ int file_gpio146;
 char gpio146_input[10];
 int file_gpio147;
 char gpio147_input[10];
+int file_gpio114;
+char gpio114_input[10];
+int file_gpio186;
+char gpio186_input[10];
+int file_gpio144;
+char gpio144_input[10];
+int file_gpio145;
+char gpio145_input[10];
 
 // Legs sensors
 char leg_on_floor = 1;
