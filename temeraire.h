@@ -25,7 +25,11 @@ extern "C" {
 }
 #endif
 
-// Declare your global variables here
+#ifndef TEMERAIRE_H
+#define TEMERAIRE_H
+
+#define NEW_INPUT_PROTOCOL
+#define FOOT_SENSORS
 
 #define US_DEVICE 0x70
 
@@ -144,4 +148,4 @@ extern "C" {
 //[REMOTE]
 #define TravelDeadZone 4   //The deadzone for the analog input from the remote
 
-
+#endif
