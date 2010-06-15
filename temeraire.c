@@ -659,7 +659,8 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 					//Leg front down position
 					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
 
-						if(GaitLegNr == LRGaitLegNr) { // uniquement la patte avant gauche pour l'instant
+
+						if(GaitLegNr == LRGaitLegNr) { // Left Rear
 							leg_on_floor = 0;
 							file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio146, gpio146_input, 1);
@@ -669,67 +670,114 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 								leg_on_floor = 1;
 								printf("GaitPosY = %d \n",GaitPosY);
 								GaitPosY = GaitPosYY - 3;
-								GaitPosX = TravelLengthX/2;
-                                                                GaitPosZ = TravelLengthZ/2;
-                                                                GaitRotY = TravelRotationY/2;
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
 							else { // must down the leg
-
-								GaitPosX = TravelLengthX/2;
 								GaitPosY = GaitPosYY + down_leg_step;
-								GaitPosZ = TravelLengthZ/2;
-								GaitRotY = TravelRotationY/2;
 								// Mettre une vitesse rapide pour descendre la patte
 								ActualGaitSpeed = DOWN_SENSOR_SPEED;
 							}
-
 						}
-						else {
-
-
-
-							if(GaitLegNr == RRGaitLegNr) { // uniquement la patte avant droite pour l'instant
-								leg_on_floor = 0;
-								file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
-								read(file_gpio147, gpio147_input, 1);
-								close(file_gpio147);
-								printf("gpio147_input[0] = %d \n",gpio147_input[0]);
-								if(gpio147_input[0] == 48) { // leg on the floor
-									leg_on_floor = 1;
-									printf("GaitPosY = %d \n",GaitPosY);
-									GaitPosY = GaitPosYY - 3;
-									GaitPosX = TravelLengthX/2;
-									GaitPosZ = TravelLengthZ/2;
-									GaitRotY = TravelRotationY/2;
-									// remettre la vitesse normale
-									ActualGaitSpeed = NomGaitSpeed;
-								}
-								else { // must down the leg
-
-									GaitPosX = TravelLengthX/2;
-									GaitPosY = GaitPosYY + down_leg_step;
-									GaitPosZ = TravelLengthZ/2;
-									GaitRotY = TravelRotationY/2;
-									// Mettre une vitesse rapide pour descendre la patte
-									ActualGaitSpeed = DOWN_SENSOR_SPEED;
-								}
-
+						if(GaitLegNr == RRGaitLegNr) { // Right Rear
+							leg_on_floor = 0;
+							file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio147, gpio147_input, 1);
+							close(file_gpio147);
+							printf("gpio147_input[0] = %d \n",gpio147_input[0]);
+							if(gpio147_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
 							}
-
-
-							else { // Pour les autres pattes, fonctionnement normal
-
-
-								GaitPosX = TravelLengthX/2;
-								GaitPosY = GaitPosYY + LegLiftHeight/((signed int)HalfLiftHeigth+1);//down_leg_step;
-								GaitPosZ = TravelLengthZ/2;
-								GaitRotY = TravelRotationY/2;
-								//printf("Leg go down \n");
+							else { // must down the leg
+								GaitPosY = GaitPosYY + down_leg_step;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
 							}
-						} 
+						}
+						if(GaitLegNr == LMGaitLegNr) { // Left Middle
+							leg_on_floor = 0;
+							file_gpio114 = open("/sys/class/gpio/gpio114/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio114, gpio114_input, 1);
+							close(file_gpio114);
+							printf("gpio114_input[0] = %d \n",gpio114_input[0]);
+							if(gpio114_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
+							}
+							else { // must down the leg
+								GaitPosY = GaitPosYY + down_leg_step;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
+							}
+						}
+						if(GaitLegNr == RMGaitLegNr) { // Right Middle
+							leg_on_floor = 0;
+							file_gpio186 = open("/sys/class/gpio/gpio186/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio186, gpio186_input, 1);
+							close(file_gpio186);
+							printf("gpio186_input[0] = %d \n",gpio186_input[0]);
+							if(gpio186_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
+							}
+							else { // must down the leg
+								GaitPosY = GaitPosYY + down_leg_step;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
+							}
+						}
+						if(GaitLegNr == LFGaitLegNr) { // Left Front
+							leg_on_floor = 0;
+							file_gpio144 = open("/sys/class/gpio/gpio144/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio144, gpio144_input, 1);
+							close(file_gpio144);
+							printf("gpio144_input[0] = %d \n",gpio144_input[0]);
+							if(gpio144_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
+							}
+							else { // must down the leg
+								GaitPosY = GaitPosYY + down_leg_step;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
+							}
+						}
+						if(GaitLegNr == RFGaitLegNr) { // Right Front
+							leg_on_floor = 0;
+							file_gpio145 = open("/sys/class/gpio/gpio145/value", O_RDWR | O_NONBLOCK);
+							read(file_gpio145, gpio145_input, 1);
+							close(file_gpio145);
+							printf("gpio145_input[0] = %d \n",gpio145_input[0]);
+							if(gpio145_input[0] == 48) { // leg on the floor
+								leg_on_floor = 1;
+								printf("GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 3;
+								// remettre la vitesse normale
+								ActualGaitSpeed = NomGaitSpeed;
+							}
+							else { // must down the leg
+								GaitPosY = GaitPosYY + down_leg_step;
+								// Mettre une vitesse rapide pour descendre la patte
+								ActualGaitSpeed = DOWN_SENSOR_SPEED;
+							}
+						}
 
+						GaitPosX = TravelLengthX/2;
+						GaitPosZ = TravelLengthZ/2;
+						GaitRotY = TravelRotationY/2;
 					}
 					//Move body forward     
 					else {
@@ -2103,18 +2151,6 @@ void open_interfaces(void) {
 		fprintf(stderr, "Error creating the thread");
 #endif
 
-	/*
-	   file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
-	   printf("Opening GPIO 146 ... ");
-	   if (file_gpio146 == -1)
-	   {
-	   printf("could not open GPIO146\n");
-	   }
-	   else {
-	   printf("OK \n");
-	   }
-	   read(file_gpio146, gpio146_input, 1);
-	 */
 
 }
 
