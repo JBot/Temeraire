@@ -19,7 +19,8 @@
 extern "C" {
 #endif
 
-#include "../adc/gumadc.h"
+#include "gumadc.h"
+//#include "../adc/gumadc.h"
 
 #ifdef __cplusplus
 }
@@ -46,6 +47,38 @@ extern "C" {
 #define BUTTON_DOWN 0
 #define BUTTON_UP   1
 
+// SERVO OFFSET
+#define SERVO_OFFSET0   23
+#define SERVO_OFFSET1   64
+#define SERVO_OFFSET2   155
+
+#define SERVO_OFFSET4   107
+#define SERVO_OFFSET5   19
+//#define SERVO_OFFSET6   40
+#define SERVO_OFFSET6   92
+
+#define SERVO_OFFSET8   -24
+//#define SERVO_OFFSET9   0
+#define SERVO_OFFSET9   55
+//#define SERVO_OFFSET10  0
+#define SERVO_OFFSET10  -131
+
+
+#define SERVO_OFFSET16  -40
+#define SERVO_OFFSET17  -32
+#define SERVO_OFFSET18  108
+
+#define SERVO_OFFSET20  27
+#define SERVO_OFFSET21  69
+#define SERVO_OFFSET22  123
+
+#define SERVO_OFFSET24  101
+#define SERVO_OFFSET25  -27
+//#define SERVO_OFFSET26  0
+#define SERVO_OFFSET26  120
+
+
+/*
 // SERVO OFFSET
 #define SERVO_OFFSET0   23
 #define SERVO_OFFSET1   0
@@ -75,7 +108,7 @@ extern "C" {
 #define SERVO_OFFSET25  48
 //#define SERVO_OFFSET26  0
 #define SERVO_OFFSET26  -27
-
+*/
 
 //[MIN/MAX ANGLES]
 #define RRCoxa_MIN -26      //Mechanical limits of the Right Rear Leg
