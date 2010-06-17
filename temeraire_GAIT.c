@@ -143,12 +143,12 @@ void GaitSelect(void) {
 
 	if(GaitType == 9) { // 4 legs
 		LRGaitLegNr = 1; 
-		//RMGaitLegNr = 21;
-		//LMGaitLegNr = 4;
 		RRGaitLegNr = 13;
-
 		LFGaitLegNr = 9;
 		RFGaitLegNr = 21;
+
+		RMGaitLegNr = 200;
+                LMGaitLegNr = 200;
 
 		NrLiftedPos = 3;
 		HalfLiftHeigth = FALSE;   
@@ -298,7 +298,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							if(gpio114_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
 								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
+								GaitPosY = GaitPosYY - 5; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
@@ -336,7 +336,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							if(gpio144_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
 								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
+								GaitPosY = GaitPosYY - 5; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
@@ -355,7 +355,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							if(gpio145_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
 								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
+								GaitPosY = GaitPosYY - 5; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
