@@ -220,7 +220,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 		//Gait in motion                                            Gait NOT in motion, return to home position
 		if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
 			GaitPosX = 0;
-			GaitPosY = -LegLiftHeight;
+			GaitPosY = GaitPosYY - LegLiftHeight;
 			GaitPosZ = 0;
 			GaitRotY = 0;
 
@@ -230,7 +230,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 			//Optional Half heigth Rear
 			if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
 				GaitPosX = -TravelLengthX/2;
-				GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+				GaitPosY = GaitPosYY - LegLiftHeight/((signed int)HalfLiftHeigth+1);
 				GaitPosZ = -TravelLengthZ/2;
 				GaitRotY = -TravelRotationY/2;
 
@@ -240,7 +240,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 				//Optional half heigth front
 				if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
 					GaitPosX = TravelLengthX/2;
-					GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+					GaitPosY = GaitPosYY - LegLiftHeight/((signed int)HalfLiftHeigth+1);
 					GaitPosZ = TravelLengthZ/2;
 					GaitRotY = TravelRotationY/2;
 
@@ -250,17 +250,17 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 					//Leg front down position
 					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
 
-
+						usleep(10);
 						if(GaitLegNr == LRGaitLegNr) { // Left Rear
 							leg_on_floor = 0;
 							file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio146, gpio146_input, 1);
 							close(file_gpio146);
-							printf("gpio146_input[0] = %d \n",gpio146_input[0]);
+							//printf("gpio146_input[0] = %d \n",gpio146_input[0]);
 							if(gpio146_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
+								printf("LR GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 5;
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
@@ -275,10 +275,10 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio147, gpio147_input, 1);
 							close(file_gpio147);
-							printf("gpio147_input[0] = %d \n",gpio147_input[0]);
+							//printf("gpio147_input[0] = %d \n",gpio147_input[0]);
 							if(gpio147_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
+								printf("RR GaitPosY = %d \n",GaitPosY);
 								GaitPosY = GaitPosYY - 3;
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
@@ -294,11 +294,11 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							file_gpio114 = open("/sys/class/gpio/gpio114/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio114, gpio114_input, 1);
 							close(file_gpio114);
-							printf("gpio114_input[0] = %d \n",gpio114_input[0]);
+							//printf("gpio114_input[0] = %d \n",gpio114_input[0]);
 							if(gpio114_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 5; // MODIF
+								printf("LM GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 6; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
@@ -313,10 +313,10 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							file_gpio186 = open("/sys/class/gpio/gpio186/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio186, gpio186_input, 1);
 							close(file_gpio186);
-							printf("gpio186_input[0] = %d \n",gpio186_input[0]);
+							//printf("gpio186_input[0] = %d \n",gpio186_input[0]);
 							if(gpio186_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
+								printf("RM GaitPosY = %d \n",GaitPosY);
 								GaitPosY = GaitPosYY - 3;
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
@@ -332,11 +332,11 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							file_gpio144 = open("/sys/class/gpio/gpio144/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio144, gpio144_input, 1);
 							close(file_gpio144);
-							printf("gpio144_input[0] = %d \n",gpio144_input[0]);
+							//printf("gpio144_input[0] = %d \n",gpio144_input[0]);
 							if(gpio144_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 5; // MODIF
+								printf("LF GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 8; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
@@ -351,16 +351,17 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 							file_gpio145 = open("/sys/class/gpio/gpio145/value", O_RDWR | O_NONBLOCK);
 							read(file_gpio145, gpio145_input, 1);
 							close(file_gpio145);
-							printf("gpio145_input[0] = %d \n",gpio145_input[0]);
+							//printf("gpio145_input[0] = %d \n",gpio145_input[0]);
 							if(gpio145_input[0] == 48) { // leg on the floor
 								leg_on_floor = 1;
-								printf("GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 5; // MODIF
+								printf("RF GaitPosY = %d \n",GaitPosY);
+								GaitPosY = GaitPosYY - 6; // MODIF
 								// remettre la vitesse normale
 								ActualGaitSpeed = NomGaitSpeed;
 							}
 							else { // must down the leg
 								GaitPosY = GaitPosYY + down_leg_step;
+								printf("RF GaitPosY = %d \n",GaitPosY);
 								// Mettre une vitesse rapide pour descendre la patte
 								ActualGaitSpeed = DOWN_SENSOR_SPEED;
 							}
@@ -541,7 +542,7 @@ void GaitSeq(void) {
 	LFGaitPosY = GaitPosY;
 	LFGaitPosZ = GaitPosZ;
 	LFGaitRotY = GaitRotY;   
-	printf("LFGaitPosY = %d \n",LFGaitPosY);  
+	//printf("LFGaitPosY = %d \n",LFGaitPosY);  
 
 	LastLeg = TRUE;
 	Gait(RMGaitLegNr, RMGaitPosX, RMGaitPosY, RMGaitPosZ, RMGaitRotY);
@@ -550,8 +551,8 @@ void GaitSeq(void) {
 	RMGaitPosZ = GaitPosZ;
 	RMGaitRotY = GaitRotY;
 
-	printf("leg_on_floor = %d \n",leg_on_floor);
-	printf("GaitStep = %d \n",GaitStep);   
+	//printf("leg_on_floor = %d \n",leg_on_floor);
+	//printf("GaitStep = %d \n",GaitStep);   
 	return;
 }
 

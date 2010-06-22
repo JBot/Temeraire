@@ -20,7 +20,7 @@ void firstposition(void) {
 		/* VRAIE POSITION */ 
 		RFPosX = 60;      //Start positions of the Right Front leg
 		RFPosY = 25;
-		RFPosZ = -81;
+		RFPosZ = -71;
 
 		RMPosX = 90;   //Start positions of the Right Middle leg
 		RMPosY = 25;
@@ -28,11 +28,11 @@ void firstposition(void) {
 
 		RRPosX = 73;    //Start positions of the Right Rear leg
 		RRPosY = 25;
-		RRPosZ = 61;
+		RRPosZ = 51;
 
 		LFPosX = 60;      //Start positions of the Left Front leg
 		LFPosY = 25;
-		LFPosZ = -81;
+		LFPosZ = -71;
 
 		LMPosX = 90;   //Start positions of the Left Middle leg
 		LMPosY = 25;
@@ -40,7 +40,7 @@ void firstposition(void) {
 
 		LRPosX = 73;      //Start positions of the Left Rear leg
 		LRPosY = 25;
-		LRPosZ = 61;
+		LRPosZ = 51;
 
 
 		/*
@@ -286,7 +286,7 @@ int main(void)
 	//Gait
 	GaitType = 8;
 	BalanceMode = 0;
-	LegLiftHeight = 100;
+	LegLiftHeight = 50;
 	GaitStep = 1;
 	Mode = 1;
 
@@ -349,6 +349,8 @@ int main(void)
 
 		//Gait
 		GaitSeq();
+
+		//adapt_heigth();
 
 		//Balance calculations
 		TotalTransX = 0; //reset values used for calculation of balance

@@ -14,6 +14,7 @@ void GetSinCos (float AngleDeg);
 void GetBoogTan(float BoogTanX, float BoogTanY);
 void ServoDriver(void);
 void FreeServos();
+void adapt_heigth(void);
 
 #endif
 

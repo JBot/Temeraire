@@ -337,7 +337,7 @@ void ServoDriver(void){
 	if ( ser_fd_ssc )
 		write(ser_fd_ssc, &Serout, sizeof(Serout));
 
-	printf("%s \n",Serout);
+	//printf("%s \n",Serout);
 	return;
 }
 
@@ -358,4 +358,27 @@ void FreeServos()
 	if ( ser_fd_ssc )
 		write(ser_fd_ssc, &Serout, sizeof(Serout));
 }
+/*
+void adapt_heigth(void) {
+
+	if(LRGaitPosY > 30 &&
+			RRGaitPosY > 30 &&
+			LMGaitPosY > 30 &&
+			RMGaitPosY > 30 &&
+			LFGaitPosY > 30 &&
+			RFGaitPosY > 30) {
+
+		LRGaitPosY-=10;
+		RRGaitPosY-=10;
+		LMGaitPosY-=10;
+		RMGaitPosY-=10;
+		LFGaitPosY-=10;
+		RFGaitPosY-=10;
+
+	}
+	//printf("!!!!!!!!!!!!!!!! \n");
+	//printf("Height adapted ! \n");
+	//printf("!!!!!!!!!!!!!!!! \n");
+}
+*/
 

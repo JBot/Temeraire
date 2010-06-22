@@ -271,6 +271,6 @@ extern char gpio145_input[10];
 
 // Legs sensors
 extern char leg_on_floor;
-#define DOWN_SENSOR_SPEED 50
+#define DOWN_SENSOR_SPEED 25
 
 #endif
