@@ -30,7 +30,7 @@ extern "C" {
 #define TEMERAIRE_H
 
 #define NEW_INPUT_PROTOCOL
-#define FOOT_SENSORS
+//#define FOOT_SENSORS
 
 #define US_DEVICE 0x70
 
