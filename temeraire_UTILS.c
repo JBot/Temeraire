@@ -358,15 +358,15 @@ void FreeServos()
 	if ( ser_fd_ssc )
 		write(ser_fd_ssc, &Serout, sizeof(Serout));
 }
-/*
-void adapt_heigth(void) {
 
-	if(LRGaitPosY > 30 &&
-			RRGaitPosY > 30 &&
-			LMGaitPosY > 30 &&
-			RMGaitPosY > 30 &&
-			LFGaitPosY > 30 &&
-			RFGaitPosY > 30) {
+void adapt_height(void) {
+
+	if((LRGaitPosY > LIMIT_HEIGHT) &&
+			(RRGaitPosY > LIMIT_HEIGHT) &&
+			(LMGaitPosY > LIMIT_HEIGHT) &&
+			(RMGaitPosY > LIMIT_HEIGHT) &&
+			(LFGaitPosY > LIMIT_HEIGHT) &&
+			(RFGaitPosY > LIMIT_HEIGHT)) {
 
 		LRGaitPosY-=10;
 		RRGaitPosY-=10;
@@ -375,10 +375,12 @@ void adapt_heigth(void) {
 		LFGaitPosY-=10;
 		RFGaitPosY-=10;
 
+	printf("!!!!!!!!!!!!!!!! \n");
+        printf("Height adapted ! \n");
+        printf("!!!!!!!!!!!!!!!! \n");
+
+	
 	}
-	//printf("!!!!!!!!!!!!!!!! \n");
-	//printf("Height adapted ! \n");
-	//printf("!!!!!!!!!!!!!!!! \n");
 }
-*/
+
 

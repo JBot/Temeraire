@@ -69,6 +69,17 @@ void firstposition(void) {
 		   LRPosZ = 0;
 		 */
 
+
+
+        LRGaitPosY = 0;
+        RFGaitPosY = 0;
+        LMGaitPosY = 0;
+        RRGaitPosY = 0;
+        LFGaitPosY = 0;
+        RMGaitPosY = 0;
+
+
+
 		// RotPoint = 82; //(arriere du robot)
 		RotPoint = 0; // (center du robot)
 
@@ -350,7 +361,7 @@ int main(void)
 		//Gait
 		GaitSeq();
 
-		//adapt_heigth();
+		adapt_height();
 
 		//Balance calculations
 		TotalTransX = 0; //reset values used for calculation of balance

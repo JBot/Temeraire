@@ -220,7 +220,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 		//Gait in motion                                            Gait NOT in motion, return to home position
 		if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
 			GaitPosX = 0;
-			GaitPosY = GaitPosYY - LegLiftHeight;
+			GaitPosY = - LegLiftHeight;
 			GaitPosZ = 0;
 			GaitRotY = 0;
 
@@ -230,7 +230,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 			//Optional Half heigth Rear
 			if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
 				GaitPosX = -TravelLengthX/2;
-				GaitPosY = GaitPosYY - LegLiftHeight/((signed int)HalfLiftHeigth+1);
+				GaitPosY = - LegLiftHeight/((signed int)HalfLiftHeigth+1);
 				GaitPosZ = -TravelLengthZ/2;
 				GaitRotY = -TravelRotationY/2;
 
@@ -240,7 +240,7 @@ void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int
 				//Optional half heigth front
 				if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
 					GaitPosX = TravelLengthX/2;
-					GaitPosY = GaitPosYY - LegLiftHeight/((signed int)HalfLiftHeigth+1);
+					GaitPosY = - LegLiftHeight/((signed int)HalfLiftHeigth+1);
 					GaitPosZ = TravelLengthZ/2;
 					GaitRotY = TravelRotationY/2;
 

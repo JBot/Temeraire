@@ -181,4 +181,7 @@ extern "C" {
 //[REMOTE]
 #define TravelDeadZone 4   //The deadzone for the analog input from the remote
 
+#define LIMIT_HEIGHT 10
+
+
 #endif
