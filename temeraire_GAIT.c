@@ -148,7 +148,7 @@ void GaitSelect(void) {
 		RFGaitLegNr = 21;
 
 		RMGaitLegNr = 200;
-                LMGaitLegNr = 200;
+		LMGaitLegNr = 200;
 
 		NrLiftedPos = 3;
 		HalfLiftHeigth = FALSE;   
@@ -193,318 +193,316 @@ void GaitSelect(void) {
 	return;
 }
 
-#ifdef FOOT_SENSORS
 /**--------------------------------------------------------------------
  * PEUT ETRE UTILISER CABS AU LIEU DE ABS
  [GAIT]*/
 void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int GaitPosZZ, signed int GaitRotYY) {
-	if (Mode == 3) {
-		if (TestLeg == GaitLegNr) {
-			GaitPosX = TravelLengthX;     
-			GaitPosY = -TravelHeightY;
-			GaitPosZ = TravelLengthZ;
-			GaitRotY = 0;
-		}
-	}
-	else {
-		//Check IF the Gait is in motion
-		if( (abs(TravelLengthX)>TravelDeadZone) || (abs(TravelLengthZ)>TravelDeadZone) || (abs(TravelRotationY)>TravelDeadZone) ) {
-			//putchar('J');
-			GaitInMotion = 1;
+
+	if(leg_sensor_ON == 1) {
+
+
+		if (Mode == 3) {
+			if (TestLeg == GaitLegNr) {
+				GaitPosX = TravelLengthX;     
+				GaitPosY = -TravelHeightY;
+				GaitPosZ = TravelLengthZ;
+				GaitRotY = 0;
+			}
 		}
 		else {
-			GaitInMotion = 0;
-		}
+			//Check IF the Gait is in motion
+			if( (abs(TravelLengthX)>TravelDeadZone) || (abs(TravelLengthZ)>TravelDeadZone) || (abs(TravelRotationY)>TravelDeadZone) ) {
+				//putchar('J');
+				GaitInMotion = 1;
+			}
+			else {
+				GaitInMotion = 0;
+			}
 
-		//Leg middle up position
-		//Gait in motion                                            Gait NOT in motion, return to home position
-		if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
-			GaitPosX = 0;
-			GaitPosY = - LegLiftHeight;
-			GaitPosZ = 0;
-			GaitRotY = 0;
-
-		}
-		else {
-
-			//Optional Half heigth Rear
-			if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
-				GaitPosX = -TravelLengthX/2;
-				GaitPosY = - LegLiftHeight/((signed int)HalfLiftHeigth+1);
-				GaitPosZ = -TravelLengthZ/2;
-				GaitRotY = -TravelRotationY/2;
+			//Leg middle up position
+			//Gait in motion                                            Gait NOT in motion, return to home position
+			if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
+				GaitPosX = 0;
+				GaitPosY = - LegLiftHeight;
+				GaitPosZ = 0;
+				GaitRotY = 0;
 
 			}
 			else {
 
-				//Optional half heigth front
-				if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
-					GaitPosX = TravelLengthX/2;
+				//Optional Half heigth Rear
+				if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
+					GaitPosX = -TravelLengthX/2;
 					GaitPosY = - LegLiftHeight/((signed int)HalfLiftHeigth+1);
-					GaitPosZ = TravelLengthZ/2;
-					GaitRotY = TravelRotationY/2;
+					GaitPosZ = -TravelLengthZ/2;
+					GaitRotY = -TravelRotationY/2;
 
 				}
-				else {     
+				else {
 
-					//Leg front down position
-					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
-
-						usleep(10);
-						if(GaitLegNr == LRGaitLegNr) { // Left Rear
-							leg_on_floor = 0;
-							file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio146, gpio146_input, 1);
-							close(file_gpio146);
-							//printf("gpio146_input[0] = %d \n",gpio146_input[0]);
-							if(gpio146_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("LR GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 5;
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-						if(GaitLegNr == RRGaitLegNr) { // Right Rear
-							leg_on_floor = 0;
-							file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio147, gpio147_input, 1);
-							close(file_gpio147);
-							//printf("gpio147_input[0] = %d \n",gpio147_input[0]);
-							if(gpio147_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("RR GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-						if(GaitLegNr == LMGaitLegNr) { // Left Middle
-							leg_on_floor = 0;
-							file_gpio114 = open("/sys/class/gpio/gpio114/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio114, gpio114_input, 1);
-							close(file_gpio114);
-							//printf("gpio114_input[0] = %d \n",gpio114_input[0]);
-							if(gpio114_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("LM GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 6; // MODIF
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-						if(GaitLegNr == RMGaitLegNr) { // Right Middle
-							leg_on_floor = 0;
-							file_gpio186 = open("/sys/class/gpio/gpio186/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio186, gpio186_input, 1);
-							close(file_gpio186);
-							//printf("gpio186_input[0] = %d \n",gpio186_input[0]);
-							if(gpio186_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("RM GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 3;
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-						if(GaitLegNr == LFGaitLegNr) { // Left Front
-							leg_on_floor = 0;
-							file_gpio144 = open("/sys/class/gpio/gpio144/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio144, gpio144_input, 1);
-							close(file_gpio144);
-							//printf("gpio144_input[0] = %d \n",gpio144_input[0]);
-							if(gpio144_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("LF GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 8; // MODIF
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-						if(GaitLegNr == RFGaitLegNr) { // Right Front
-							leg_on_floor = 0;
-							file_gpio145 = open("/sys/class/gpio/gpio145/value", O_RDWR | O_NONBLOCK);
-							read(file_gpio145, gpio145_input, 1);
-							close(file_gpio145);
-							//printf("gpio145_input[0] = %d \n",gpio145_input[0]);
-							if(gpio145_input[0] == 48) { // leg on the floor
-								leg_on_floor = 1;
-								printf("RF GaitPosY = %d \n",GaitPosY);
-								GaitPosY = GaitPosYY - 6; // MODIF
-								// remettre la vitesse normale
-								ActualGaitSpeed = NomGaitSpeed;
-							}
-							else { // must down the leg
-								GaitPosY = GaitPosYY + down_leg_step;
-								printf("RF GaitPosY = %d \n",GaitPosY);
-								// Mettre une vitesse rapide pour descendre la patte
-								ActualGaitSpeed = DOWN_SENSOR_SPEED;
-							}
-						}
-
+					//Optional half heigth front
+					if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
 						GaitPosX = TravelLengthX/2;
+						GaitPosY = - LegLiftHeight/((signed int)HalfLiftHeigth+1);
 						GaitPosZ = TravelLengthZ/2;
 						GaitRotY = TravelRotationY/2;
-					}
-					//Move body forward     
-					else {
 
-						if(leg_on_floor == 0) { // Leg not on the floor
-							GaitPosX = GaitPosXX;
-							GaitPosY = GaitPosYY;
-							GaitPosZ = GaitPosZZ;
-							GaitRotY = GaitRotYY;
+					}
+					else {     
+
+						//Leg front down position
+						if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos))) {         
+
+							usleep(10);
+							if(GaitLegNr == LRGaitLegNr) { // Left Rear
+								leg_on_floor = 0;
+								file_gpio146 = open("/sys/class/gpio/gpio146/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio146, gpio146_input, 1);
+								close(file_gpio146);
+								//printf("gpio146_input[0] = %d \n",gpio146_input[0]);
+								if(gpio146_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("LR GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 10; // 5
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+							if(GaitLegNr == RRGaitLegNr) { // Right Rear
+								leg_on_floor = 0;
+								file_gpio147 = open("/sys/class/gpio/gpio147/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio147, gpio147_input, 1);
+								close(file_gpio147);
+								//printf("gpio147_input[0] = %d \n",gpio147_input[0]);
+								if(gpio147_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("RR GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 5; // 3
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+							if(GaitLegNr == LMGaitLegNr) { // Left Middle
+								leg_on_floor = 0;
+								file_gpio114 = open("/sys/class/gpio/gpio114/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio114, gpio114_input, 1);
+								close(file_gpio114);
+								//printf("gpio114_input[0] = %d \n",gpio114_input[0]);
+								if(gpio114_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("LM GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 10; // 6
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+							if(GaitLegNr == RMGaitLegNr) { // Right Middle
+								leg_on_floor = 0;
+								file_gpio186 = open("/sys/class/gpio/gpio186/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio186, gpio186_input, 1);
+								close(file_gpio186);
+								//printf("gpio186_input[0] = %d \n",gpio186_input[0]);
+								if(gpio186_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("RM GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 4; // 3
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+							if(GaitLegNr == LFGaitLegNr) { // Left Front
+								leg_on_floor = 0;
+								file_gpio144 = open("/sys/class/gpio/gpio144/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio144, gpio144_input, 1);
+								close(file_gpio144);
+								//printf("gpio144_input[0] = %d \n",gpio144_input[0]);
+								if(gpio144_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("LF GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 6; // 8
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+							if(GaitLegNr == RFGaitLegNr) { // Right Front
+								leg_on_floor = 0;
+								file_gpio145 = open("/sys/class/gpio/gpio145/value", O_RDWR | O_NONBLOCK);
+								read(file_gpio145, gpio145_input, 1);
+								close(file_gpio145);
+								//printf("gpio145_input[0] = %d \n",gpio145_input[0]);
+								if(gpio145_input[0] == 48) { // leg on the floor
+									leg_on_floor = 1;
+									printf("RF GaitPosY = %d \n",GaitPosY);
+									GaitPosY = GaitPosYY - 4; // 6
+									// remettre la vitesse normale
+									ActualGaitSpeed = NomGaitSpeed;
+								}
+								else { // must down the leg
+									GaitPosY = GaitPosYY + down_leg_step;
+									printf("RF GaitPosY = %d \n",GaitPosY);
+									// Mettre une vitesse rapide pour descendre la patte
+									ActualGaitSpeed = DOWN_SENSOR_SPEED;
+								}
+							}
+
+							GaitPosX = TravelLengthX/2;
+							GaitPosZ = TravelLengthZ/2;
+							GaitRotY = TravelRotationY/2;
 						}
+						//Move body forward     
 						else {
+
+							if(leg_on_floor == 0) { // Leg not on the floor
+								GaitPosX = GaitPosXX;
+								GaitPosY = GaitPosYY;
+								GaitPosZ = GaitPosZZ;
+								GaitRotY = GaitRotYY;
+							}
+							else {
+								GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
+								GaitPosY = GaitPosYY;
+								GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
+								GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+							}
+							//printf("Move body \n");
+						}
+					}
+				}
+			}
+		}
+		/*
+		   printf("leg_on_floor = %d \n",leg_on_floor);
+		   printf("GaitStep = %d \n",GaitStep); 
+		 */
+		//Advance to the next step !!!!!!!! TO CHANGE !!!!!!!!
+		if (LastLeg && (leg_on_floor == 1)) {   //The last leg in this step and legs are on the floor
+			GaitStep = GaitStep+1;
+			if (GaitStep>StepsInGait) {
+				GaitStep = 1;
+			}
+			//printf(" \n");
+		}
+
+		return;
+
+	}
+	else {
+
+		if (Mode == 3) {
+			if (TestLeg == GaitLegNr) {
+				GaitPosX = TravelLengthX;     
+				GaitPosY = -TravelHeightY;
+				GaitPosZ = TravelLengthZ;
+				GaitRotY = 0;
+			}
+		}
+		else {
+			//Check IF the Gait is in motion
+			if( (abs(TravelLengthX)>TravelDeadZone) || (abs(TravelLengthZ)>TravelDeadZone) || (abs(TravelRotationY)>TravelDeadZone) ) {
+				//putchar('J');
+				GaitInMotion = 1;
+			}
+			else {
+				GaitInMotion = 0;
+			}
+
+			//Leg middle up position
+			//Gait in motion                                            Gait NOT in motion, return to home position
+			if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
+				GaitPosX = 0;
+				GaitPosY = -LegLiftHeight;
+				GaitPosZ = 0;
+				GaitRotY = 0;
+
+			}
+			else {
+
+				//Optional Half heigth Rear
+				if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
+					GaitPosX = -TravelLengthX/2;
+					GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+					GaitPosZ = -TravelLengthZ/2;
+					GaitRotY = -TravelRotationY/2;
+
+				}
+				else {
+
+					//Optional half heigth front
+					if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
+						GaitPosX = TravelLengthX/2;
+						GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
+						GaitPosZ = TravelLengthZ/2;
+						GaitRotY = TravelRotationY/2;
+
+					}
+					else {     
+
+						//Leg front down position
+						if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos)) && GaitPosYY<0) {
+
+							GaitPosX = TravelLengthX/2;
+							GaitPosY = 0;
+							GaitPosZ = TravelLengthZ/2;
+							GaitRotY = TravelRotationY/2;
+							//printf("Leg go down \n");
+						}
+						//Move body forward     
+						else {
+
 							GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
-							GaitPosY = GaitPosYY;
+							GaitPosY = 0;
 							GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
 							GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
+							//printf("Move body \n");
 						}
-						//printf("Move body \n");
 					}
 				}
+
 			}
 		}
-	}
-	/*
-	   printf("leg_on_floor = %d \n",leg_on_floor);
-	   printf("GaitStep = %d \n",GaitStep); 
-	 */
-	//Advance to the next step !!!!!!!! TO CHANGE !!!!!!!!
-	if (LastLeg && (leg_on_floor == 1)) {   //The last leg in this step and legs are on the floor
-		GaitStep = GaitStep+1;
-		if (GaitStep>StepsInGait) {
-			GaitStep = 1;
+		/*
+		   printf("leg_on_floor = %d \n",leg_on_floor);
+		   printf("GaitStep = %d \n",GaitStep); 
+		 */
+		//Advance to the next step 
+		if (LastLeg) {   //The last leg in this step
+			GaitStep = GaitStep+1;
+			if (GaitStep>StepsInGait) {
+				GaitStep = 1;
+			}
+			//printf(" \n");
 		}
-		//printf(" \n");
+
+		return;
+
 	}
-
-	return;
-
 }
 
-#else 
-
-/**--------------------------------------------------------------------
- * PEUT ETRE UTILISER CABS AU LIEU DE ABS
- [GAIT]*/
-void Gait(char GaitLegNr, signed int GaitPosXX, signed int GaitPosYY, signed int GaitPosZZ, signed int GaitRotYY) {
-	if (Mode == 3) {
-		if (TestLeg == GaitLegNr) {
-			GaitPosX = TravelLengthX;     
-			GaitPosY = -TravelHeightY;
-			GaitPosZ = TravelLengthZ;
-			GaitRotY = 0;
-		}
-	}
-	else {
-		//Check IF the Gait is in motion
-		if( (abs(TravelLengthX)>TravelDeadZone) || (abs(TravelLengthZ)>TravelDeadZone) || (abs(TravelRotationY)>TravelDeadZone) ) {
-			//putchar('J');
-			GaitInMotion = 1;
-		}
-		else {
-			GaitInMotion = 0;
-		}
-
-		//Leg middle up position
-		//Gait in motion                                            Gait NOT in motion, return to home position
-		if ((GaitInMotion && (NrLiftedPos==1 || NrLiftedPos==3) && GaitStep==GaitLegNr) || (GaitInMotion==FALSE && GaitStep==GaitLegNr && ((abs(GaitPosXX)>2) || (abs(GaitPosZZ)>2) || (abs(GaitRotYY)>2)))) {   //Up
-			GaitPosX = 0;
-			GaitPosY = -LegLiftHeight;
-			GaitPosZ = 0;
-			GaitRotY = 0;
-
-		}
-		else {
-
-			//Optional Half heigth Rear
-			if (((NrLiftedPos==2 && GaitStep==GaitLegNr) || (NrLiftedPos==3 && (GaitStep==(GaitLegNr-1) || GaitStep==GaitLegNr+(StepsInGait-1)))) && GaitInMotion) {
-				GaitPosX = -TravelLengthX/2;
-				GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
-				GaitPosZ = -TravelLengthZ/2;
-				GaitRotY = -TravelRotationY/2;
-
-			}
-			else {
-
-				//Optional half heigth front
-				if ((NrLiftedPos>=2) && (GaitStep==GaitLegNr+1 || GaitStep==GaitLegNr-(StepsInGait-1)) && GaitInMotion) {
-					GaitPosX = TravelLengthX/2;
-					GaitPosY = -LegLiftHeight/((signed int)HalfLiftHeigth+1);
-					GaitPosZ = TravelLengthZ/2;
-					GaitRotY = TravelRotationY/2;
-
-				}
-				else {     
-
-					//Leg front down position
-					if ((GaitStep==GaitLegNr+NrLiftedPos || GaitStep==GaitLegNr-(StepsInGait-NrLiftedPos)) && GaitPosYY<0) {
-
-						GaitPosX = TravelLengthX/2;
-						GaitPosY = 0;
-						GaitPosZ = TravelLengthZ/2;
-						GaitRotY = TravelRotationY/2;
-						//printf("Leg go down \n");
-					}
-					//Move body forward     
-					else {
-
-						GaitPosX = GaitPosXX - (TravelLengthX/TLDivFactor);     
-						GaitPosY = 0;
-						GaitPosZ = GaitPosZZ - (TravelLengthZ/TLDivFactor);
-						GaitRotY = GaitRotYY - (TravelRotationY/TLDivFactor);
-						//printf("Move body \n");
-					}
-				}
-			}
-
-		}
-	}
-	/*
-	   printf("leg_on_floor = %d \n",leg_on_floor);
-	   printf("GaitStep = %d \n",GaitStep); 
-	 */
-	//Advance to the next step 
-	if (LastLeg) {   //The last leg in this step
-		GaitStep = GaitStep+1;
-		if (GaitStep>StepsInGait) {
-			GaitStep = 1;
-		}
-		//printf(" \n");
-	}
-
-	return;
-
-}
-
-#endif
 
 /**--------------------------------------------------------------------
   [GAIT Sequence]*/

@@ -114,7 +114,7 @@ void firstposition(void) {
 	}
 	else if( starting == 1 ) {              
 
-		BodyPosYint = 100;
+		BodyPosYint = 80;
 		NomGaitSpeed = 500;
 		starting++;
 		ActualGaitSpeed = NomGaitSpeed;

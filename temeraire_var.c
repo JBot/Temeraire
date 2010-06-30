@@ -266,6 +266,7 @@ int file_gpio145;
 char gpio145_input[10];
 
 // Legs sensors
+char leg_sensor_ON = 0;
 char leg_on_floor = 1;
 
 struct adc_channel channels[] = {

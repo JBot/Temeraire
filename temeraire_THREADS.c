@@ -117,8 +117,9 @@ void *getInput(void *args) {
 							case 'A' : // Balance mode
 								BalanceMode = temp_input;
 								break;
-							case 'a' : // Balance mode
-
+							case 'a' : // LEG SENSOR mode
+								leg_sensor_ON = (char) abs(temp_input);
+								printf("Leg sensor ON = %d \n",leg_sensor_ON);
 								break;
 							case 'B' : // BodyPosX
 								BodyPosXint = temp_input;
@@ -166,11 +167,11 @@ void *getInput(void *args) {
 
 								break;
 							case 'I' : // GaitSpeed
-#ifdef FOOT_SENSORS
-								NomGaitSpeed = temp_input;
-#else 
-								ActualGaitSpeed = temp_input;
-#endif
+								if( leg_sensor_ON == 1 ) 
+									NomGaitSpeed = temp_input;
+								else 
+									ActualGaitSpeed = temp_input;
+
 								break;
 							case 'i' : 
 								NomGaitSpeed = temp_input;

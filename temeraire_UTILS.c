@@ -237,7 +237,7 @@ void ServoDriver(void){
 	temp = (int)( (float)(LRTibiaAngle +90)/0.10588238 ) + 650 + SERVO_OFFSET18;
 	sprintf(Serout, "%s #%dP%d", Serout, 18, temp);
 
-	/*
+	
 	// Head  
 	// 3 DOFs
 	temp = (int) ( (float)(BodyRotZ*7 + 90)/0.10588238 ) + 650;
@@ -250,7 +250,7 @@ void ServoDriver(void){
 	temp = (int) Mandible;
 	sprintf(Serout, "%s #%dP%d", Serout, 12, temp);
 	sprintf(Serout, "%s #%dP%d", Serout, 13, 3000-temp);
-	 */
+	 
 	/*
 	   temp = (int)( (float)(headAngle +90)/0.10588238 ) + 650 + 0;
 	   sprintf(Serout, "%s #%dP%d", Serout, 30, temp);

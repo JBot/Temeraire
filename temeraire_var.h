@@ -270,7 +270,9 @@ extern int file_gpio145;
 extern char gpio145_input[10];
 
 // Legs sensors
+extern char leg_sensor_ON;
 extern char leg_on_floor;
 #define DOWN_SENSOR_SPEED 25
+
 
 #endif
