@@ -246,7 +246,9 @@ extern struct twl4030_madc_user_parms *par;
 
 // I2C
 extern int file_i2c;
-extern int us_sensor_distance;
+extern int us_sensor_distance_front;
+extern int us_sensor_distance_left;
+extern int us_sensor_distance_right;
 extern int us_sensor_light;
 
 // Thread
@@ -274,5 +276,11 @@ extern char leg_sensor_ON;
 extern char leg_on_floor;
 #define DOWN_SENSOR_SPEED 25
 
+// General state of the robot
+struct robot_state {
+	int state;
+
+};
+extern struct robot_state temeraire_state;
 
 #endif

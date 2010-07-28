@@ -14,6 +14,9 @@
 #include <pthread.h>
 // For I2C : 
 #include <linux/i2c-dev.h>
+// For gettimeofday
+#include <getopt.h>
+#include <sys/time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +35,12 @@ extern "C" {
 #define NEW_INPUT_PROTOCOL
 //#define FOOT_SENSORS
 
-#define US_DEVICE 0x70
+#define US_DEVICE_FRONT 0x70
+#define US_DEVICE_LEFT  0x71
+#define US_DEVICE_RIGHT 0x72
+
+#define US_SIDE_LIMIT 30
+#define US_FRONT_LIMIT 20
 
 #define SSCDEVICE "/dev/ttyS0"
 #define MODEMDEVICE "/dev/rfcomm0"
@@ -183,5 +191,13 @@ extern "C" {
 
 #define LIMIT_HEIGHT 10
 
+
+// AI states
+#define NOTHING 0
+#define CHECKING_ENV 1
+#define AVOIDING_ITEM_LEFT 2
+#define AVOIDING_ITEM_RIGHT 3
+#define AVOIDING_WALL_SIDE 4
+#define AVOIDING_WALL_FRONT 5
 
 #endif

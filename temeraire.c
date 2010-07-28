@@ -5,6 +5,7 @@
 #include "temeraire_GAIT.h"
 #include "temeraire_IK.h"
 #include "temeraire_UTILS.h"
+#include "temeraire_AI.h"
 
 /* Functions */
 // I/O Functions
@@ -218,8 +219,8 @@ void open_interfaces(void) {
 		system("aplay /var/sons_robot/ok.wav ");
 
 		// US sensor 
-		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE) < 0) {
-			printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE)\n");
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_FRONT) < 0) {
+			printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_FRONT)\n");
 		}
 		else {
 			if (write_reg_i2c(file_i2c, 0x02, 0x8C) == -1) {
@@ -280,7 +281,9 @@ int main(void)
 {
 	// Declare your local variables here
 	int wait_counter = 0;
+	struct timeval timebeforenextcheck, now;
 
+	temeraire_state.state = NOTHING;	
 
 	open_interfaces();
 
@@ -331,7 +334,7 @@ int main(void)
 	armtab[0][1] = 0;
 	armtab[0][2] = 0;
 #endif
-
+	gettimeofday( &timebeforenextcheck, NULL );
 	while (1)
 	{
 		// Place your code here
@@ -390,7 +393,9 @@ int main(void)
 
 
 		doBodyRot();
-
+		
+		do_IKs();
+		/*
 		//Right Front leg
 		BodyIK(-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFPosY+BodyPosY+RFGaitPosY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
 		LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ);   
@@ -432,7 +437,7 @@ int main(void)
 		LRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
 		LRFemurAngle = IKFemurAngle;
 		LRTibiaAngle = IKTibiaAngle;
-
+		*/
 		/*
 		   CheckAngles();
 		   putchar('Q');
@@ -447,11 +452,49 @@ int main(void)
 		   putchar(13);
 		   }
 		 */ 
+
+		printf("us_sensor_distance_front %i | us_sensor_distance_left %i | us_sensor_distance_right %i \n", us_sensor_distance_front, us_sensor_distance_left, us_sensor_distance_right);
+
 		for(wait_counter = 0; wait_counter < 10; wait_counter++) {
 			usleep(ActualGaitSpeed*100);
-			if ( us_sensor_distance < 15 && TravelLengthZ < 0) {
-				TravelLengthZ = 0;
+	
+			gettimeofday( &now, NULL );
+
+			process_AI();
+/*
+			if ( TravelLengthZ < 0) {
+				// TravelLengthZ = 0;
+				//look_around();
+				printf("Check result = %i\n", check_sensors());
+				switch(check_sensors()) {
+					case 0 :
+						// Nothing
+						break;
+					case 1 :
+						TravelLengthZ = 0;
+						look_around();
+						find_where_to_turn(1);
+						gettimeofday( &timebeforenextcheck, NULL );
+                                                break;
+					case 2 :
+						choose_direction_to_avoid_item(0);
+                                                break;
+					case 3 :
+						choose_direction_to_avoid_item(1);
+                                                break;
+					case 4 :
+						choose_direction_to_avoid_item(0);
+                                                break;
+					case 5 :
+						choose_direction_to_avoid_item(1);
+                                                break;
+					default :
+						
+						break;
+				}
 			}
+*/
+
 		}
 		if(sleeping == 0){
 			ServoDriver();

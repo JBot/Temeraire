@@ -6,14 +6,74 @@ void *thread_i2c_ultrasound(void *arg) {
 	fprintf(stdout, "Thread: %d (Ultrasound sensor) running.\n", (int)2);
 	usleep(70000);
 	while(1) {
-
+/*		// Start sensing on the left
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_LEFT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_LEFT)\n");
+                }
+                else {
 		if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
 			printf("\n\nwrite bad...\n");
-
-		usleep(100000);
-
+		}
+		// Start sensing on the right
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_RIGHT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_RIGHT)\n");
+                }
+                else {
+                if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+                        printf("\n\nwrite bad...\n");
+                }
+		// Wait end of sensing
+		usleep(40000);
+		// Start sensing on the front
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_FRONT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_RIGHT)\n");
+                }
+                else {
+                if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+                        printf("\n\nwrite bad...\n");
+                }
+		usleep(1000);
+		// Read left value
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_LEFT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_LEFT)\n");
+                }
+                else {
+                
 		result = (uint16_t)read_reg_i2c(file_i2c, 0x02, 1);
-		result2 = (uint16_t)read_reg_i2c(file_i2c, 0x03, 1);
+                result2 = (uint16_t)read_reg_i2c(file_i2c, 0x03, 1);
+
+		us_sensor_distance_left = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+
+		}
+		usleep(1000);
+		// Read right value
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_RIGHT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_RIGHT)\n");
+                }
+                else {
+                
+                result = (uint16_t)read_reg_i2c(file_i2c, 0x02, 1);
+                result2 = (uint16_t)read_reg_i2c(file_i2c, 0x03, 1);
+
+                us_sensor_distance_right = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+
+                }
+		// Wait end of front sensing
+		usleep(40000);
+		// Read front value (and light value)
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_FRONT) < 0) {
+                        printf("ERROR : ioctl(I2C_SLAVE, US_DEVICE_FRONT)\n");
+                }
+                else {
+
+                result = (uint16_t)read_reg_i2c(file_i2c, 0x02, 1);
+                result2 = (uint16_t)read_reg_i2c(file_i2c, 0x03, 1);
+
+                us_sensor_distance_front = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+		us_sensor_light = (uint16_t)read_reg_i2c(file_i2c, 0x01, 1);
+                }
+		usleep(1000);
+*/
 		/*printf("1 : IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
 		  result = (uint16_t)read_reg_i2c(file_i2c, 0x04, 1);
 		  result2 = (uint16_t)read_reg_i2c(file_i2c, 0x05, 1);
@@ -22,14 +82,75 @@ void *thread_i2c_ultrasound(void *arg) {
 		  result2 = (uint16_t)read_reg_i2c(file_i2c, 0x07, 1);
 		  printf("3 : IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
 		 */
-		us_sensor_light = (uint16_t)read_reg_i2c(file_i2c, 0x01, 1);		
-
-		if (result == -1)
-			printf("\n\nread bad...\n");
 
 		//printf("IO2 : %i IO3 : %i\n", result & 0x00FF, result2 &  0x00FF);
-		us_sensor_distance = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
 		//printf("us_sensor : %i \n", us_sensor_distance);
+
+
+
+
+
+
+
+
+		if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_FRONT) < 0) {
+			perror("ioctl(I2C_SLAVE)");
+		}
+
+//		printf("Running some tests on device 0xE0...\n");
+		if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+			printf("\n\nwrite bad...\n");
+		usleep(100000);
+
+		result = read_reg_i2c(file_i2c, 2, 1);
+		result2 = read_reg_i2c(file_i2c, 3, 1); 
+		if (result == -1)
+			printf("\n\nread bad...\n"); 
+		
+		us_sensor_distance_front = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+		//printf("1 -- IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
+
+
+                if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_LEFT) < 0) {
+                        perror("ioctl(I2C_SLAVE)");
+                }
+
+//                printf("Running some tests on device 0xE2...\n");
+                if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+                        printf("\n\nwrite bad...\n");
+                usleep(100000);
+
+                result = read_reg_i2c(file_i2c, 2, 1);
+                result2 = read_reg_i2c(file_i2c, 3, 1);
+                if (result == -1)
+                        printf("\n\nread bad...\n");
+
+		us_sensor_distance_left = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+                //printf("2 -- IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
+
+
+                if (ioctl(file_i2c, I2C_SLAVE, US_DEVICE_RIGHT) < 0) {
+                        perror("ioctl(I2C_SLAVE)");
+                }
+
+//                printf("Running some tests on device 0xE4...\n");
+                if (write_reg_i2c(file_i2c, 0, 0x51) == -1)
+                        printf("\n\nwrite bad...\n");
+                usleep(100000);
+
+                result = read_reg_i2c(file_i2c, 2, 1);
+                result2 = read_reg_i2c(file_i2c, 3, 1);
+                if (result == -1)
+                        printf("\n\nread bad...\n");
+
+		us_sensor_distance_right = ((result & 0x00FF) << 8) + (result2 &  0x00FF);
+                //printf("3 -- IO2 : %i IO3 : %i\n", result & 0xff, result2 &  0xff);
+
+
+
+
+
+
 
 	}
 	fprintf(stdout, "Thread: %d done.\n", (int)2);
@@ -50,8 +171,8 @@ void *thread_adc_battery(void *arg) {
 
 		battery_voltage = read_adc(file_adc, par, 0);
 		if( battery_voltage < 1.7  ) {
-			system("aplay /var/sons_robot/low_battery.wav &");
-			fprintf(stdout, "LOW BATTERY.\n");
+			//system("aplay /var/sons_robot/low_battery.wav &");
+			//fprintf(stdout, "LOW BATTERY.\n");
 		}
 
 	}
@@ -119,6 +240,8 @@ void *getInput(void *args) {
 								break;
 							case 'a' : // LEG SENSOR mode
 								leg_sensor_ON = (char) abs(temp_input);
+								if(leg_sensor_ON == 0)
+									ActualGaitSpeed = NomGaitSpeed;
 								printf("Leg sensor ON = %d \n",leg_sensor_ON);
 								break;
 							case 'B' : // BodyPosX

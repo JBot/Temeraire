@@ -242,7 +242,9 @@ struct twl4030_madc_user_parms *par;
 
 // I2C
 int file_i2c;
-int us_sensor_distance = 255;
+int us_sensor_distance_front = 255;
+int us_sensor_distance_left = 255;
+int us_sensor_distance_right = 255;
 int us_sensor_light = 255;
 
 // Thread
@@ -311,3 +313,5 @@ struct adc_channel channels[] = {
                  6.0,
         },
 };
+
+struct robot_state temeraire_state = { NOTHING };

@@ -383,4 +383,30 @@ void adapt_height(void) {
 	}
 }
 
+inline struct timeval timeval_difference( struct timeval* first,
+                                          struct timeval* second )
+{
+  struct timeval to_return;
+
+  if( second->tv_usec > first->tv_usec )
+    {
+      to_return.tv_usec = ( second->tv_usec - first->tv_usec );
+      to_return.tv_sec = ( second->tv_sec - first->tv_sec );
+    }
+  else
+    {
+      to_return.tv_usec = ( 1000000 - first->tv_usec ) + second->tv_usec;
+      to_return.tv_sec = ( second->tv_sec - first->tv_sec ) - 1;
+    }
+
+  return to_return;
+}
+
+inline int is_greater_than( struct timeval* first, struct timeval* second )
+{
+  if( first->tv_sec > second->tv_sec ) return 1;
+  if( ( first->tv_sec == second->tv_sec ) && ( first->tv_usec > second->tv_usec ) ) return 1;
+  return 0;
+}
+
 
