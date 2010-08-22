@@ -36,14 +36,18 @@ extern "C" {
 //#define FOOT_SENSORS
 
 #define US_DEVICE_FRONT 0x70
-#define US_DEVICE_LEFT  0x71
-#define US_DEVICE_RIGHT 0x72
+#define US_DEVICE_LEFT  0x72
+#define US_DEVICE_RIGHT 0x71
 
-#define US_SIDE_LIMIT 30
-#define US_FRONT_LIMIT 20
+#define US_SIDE_LIMIT 25
+#define US_SIDE_DETECTION 33
+#define US_FRONT_LIMIT 15
+#define US_FRONT_DETECTION 25
+
 
 #define SSCDEVICE "/dev/ttyS0"
 #define MODEMDEVICE "/dev/rfcomm0"
+#define IMUDEVICE "/dev/ttyS2"
 #define BAUDRATE B115200
 
 #define False 0

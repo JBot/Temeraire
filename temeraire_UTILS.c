@@ -382,6 +382,46 @@ void adapt_height(void) {
 	
 	}
 }
+#define ADAPT_DISTANCE 3
+void adapt_pitch_roll(void) {
+
+
+	if(global_pitch > 7.0) {
+                LRGaitPosY_adapt-=ADAPT_DISTANCE;
+                RRGaitPosY_adapt-=ADAPT_DISTANCE;
+
+		LFGaitPosY_adapt+=ADAPT_DISTANCE;
+                RFGaitPosY_adapt+=ADAPT_DISTANCE;
+	}
+
+	if(global_pitch < 4.0) {
+                LRGaitPosY_adapt+=ADAPT_DISTANCE;
+                RRGaitPosY_adapt+=ADAPT_DISTANCE;
+
+                LFGaitPosY_adapt-=ADAPT_DISTANCE;
+                RFGaitPosY_adapt-=ADAPT_DISTANCE;
+        }
+	if(global_roll > 9.0) {
+                LRGaitPosY_adapt-=ADAPT_DISTANCE;
+                LMGaitPosY_adapt-=ADAPT_DISTANCE;
+                LFGaitPosY_adapt-=ADAPT_DISTANCE;
+
+                RRGaitPosY_adapt+=ADAPT_DISTANCE;
+                RMGaitPosY_adapt+=ADAPT_DISTANCE;
+                RFGaitPosY_adapt+=ADAPT_DISTANCE;
+        }
+        if(global_roll < 6.0) {
+                LRGaitPosY_adapt+=ADAPT_DISTANCE;
+                LMGaitPosY_adapt+=ADAPT_DISTANCE;
+                LFGaitPosY_adapt+=ADAPT_DISTANCE;
+
+                RRGaitPosY_adapt-=ADAPT_DISTANCE;
+                RMGaitPosY_adapt-=ADAPT_DISTANCE;
+                RFGaitPosY_adapt-=ADAPT_DISTANCE;
+        }
+
+}
+
 
 inline struct timeval timeval_difference( struct timeval* first,
                                           struct timeval* second )

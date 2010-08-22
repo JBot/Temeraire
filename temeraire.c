@@ -207,6 +207,39 @@ void open_interfaces(void) {
 		fcntl(ser_fd_modem, F_SETFL, FNDELAY);
 	}
 
+	// Imu serial port IMUDEVICE
+
+	ser_fd_imu = open(IMUDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
+        system("espeak -a 200 \"Inertial measurement unit\" ");
+	if( ser_fd_imu == -1)
+        {
+                printf( " IMU Serial Not Open \n" );
+                system("aplay /var/sons_robot/nok.wav ");
+        }
+        else
+        {
+                printf( " IMU Serial Open \n" );
+                system("aplay /var/sons_robot/ok.wav ");
+                fcntl(ser_fd_imu, F_SETFL, FNDELAY);
+                tcgetattr(ser_fd_imu, &oldtio_imu);                             // Backup old port settings
+                memset(&newtio_imu, 0, sizeof(newtio_imu));
+
+                newtio_imu.c_iflag = IGNBRK | IGNPAR;
+                newtio_imu.c_oflag = 0;
+                newtio_imu.c_cflag = BAUDRATE | CREAD | CS8 | CLOCAL;
+                newtio_imu.c_lflag = 0;
+
+                tcflush(ser_fd_imu, TCIFLUSH);
+                tcsetattr(ser_fd_imu, TCSANOW, &newtio_imu);
+
+                memset(&newtio_imu, 0, sizeof(newtio_imu));
+                tcgetattr(ser_fd_imu, &newtio_imu);
+
+                fcntl(ser_fd_imu, F_SETFL, FNDELAY);
+        }
+
+
+
 
 	/* US sensor check */
 	file_i2c = open("/dev/i2c-3", O_RDWR);
@@ -237,7 +270,7 @@ void open_interfaces(void) {
 
 	/* Battery check */
 	file_adc = open("/dev/twl4030-madc", O_RDWR | O_NONBLOCK);
-	system("aplay /var/sons_robot/adc.wav ");
+	system("espeak -a 200 \"Analog to digital converter\" ");
 	if (file_adc == -1)
 	{
 		system("aplay /var/sons_robot/nok.wav ");
@@ -255,11 +288,11 @@ void open_interfaces(void) {
 
 	battery_voltage = read_adc(file_adc, par, 0);
 	if( battery_voltage < 1.7  ) {
-		system("aplay /var/sons_robot/low_battery.wav ");
+		//system("aplay /var/sons_robot/low_battery.wav ");
 		fprintf(stdout, "LOW BATTERY.\n");
 	}
 	else {
-		system("aplay /var/sons_robot/battery_ok.wav ");
+		//system("aplay /var/sons_robot/battery_ok.wav ");
 		fprintf(stdout, "LOW BATTERY.\n");
 	}
 
@@ -281,9 +314,18 @@ int main(void)
 {
 	// Declare your local variables here
 	int wait_counter = 0;
-	struct timeval timebeforenextcheck, now;
+	struct timeval now, timediff;
+	struct timeval time1sec;
+	
 
-	temeraire_state.state = NOTHING;	
+	printf("state = %i \n", temeraire_state.state);
+	temeraire_state.state = CHECKING_ENV;	
+	printf("state = %i \n", temeraire_state.state);
+
+	time1sec.tv_sec = 0;
+	time1sec.tv_usec = 500000;	
+	gettimeofday( &timebeforenextcheck, NULL );
+	gettimeofday( &now, NULL );
 
 	open_interfaces();
 
@@ -354,6 +396,8 @@ int main(void)
 		getInput();
 #endif  
 
+		read_IMU();
+		
 		/*armWrite();*/                
 
 		//Reset IKsolution indicators                                                                                                                                                
@@ -365,6 +409,8 @@ int main(void)
 		GaitSeq();
 
 		adapt_height();
+		if(sleeping == 0)
+			adapt_pitch_roll();
 
 		//Balance calculations
 		TotalTransX = 0; //reset values used for calculation of balance
@@ -395,109 +441,29 @@ int main(void)
 		doBodyRot();
 		
 		do_IKs();
-		/*
-		//Right Front leg
-		BodyIK(-RFPosX+BodyPosX+RFGaitPosX, RFPosZ+BodyPosZ+RFGaitPosZ,RFPosY+BodyPosY+RFGaitPosY, (signed int)RFOffsetX, (signed int)RFOffsetZ, (signed int)RFGaitRotY);
-		LegIK(RFPosX-BodyPosX+BodyIKPosX-RFGaitPosX, RFPosY+BodyPosY-BodyIKPosY+RFGaitPosY, RFPosZ+BodyPosZ-BodyIKPosZ+RFGaitPosZ);   
-		RFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
-		RFFemurAngle = IKFemurAngle;
-		RFTibiaAngle = IKTibiaAngle;
 
-		//Right Middle leg
-		BodyIK(-RMPosX+BodyPosX+RMGaitPosX, RMPosZ+BodyPosZ+RMGaitPosZ,RMPosY+BodyPosY+RMGaitPosY, (signed int)RMOffsetX, (signed int)RMOffsetZ, (signed int)RMGaitRotY);
-		LegIK(RMPosX-BodyPosX+BodyIKPosX-RMGaitPosX, RMPosY+BodyPosY-BodyIKPosY+RMGaitPosY, RMPosZ+BodyPosZ-BodyIKPosZ+RMGaitPosZ);
-		RMCoxaAngle  = IKCoxaAngle;
-		RMFemurAngle = IKFemurAngle;
-		RMTibiaAngle = IKTibiaAngle;  
-
-		//Right Rear leg
-		BodyIK(-RRPosX+BodyPosX+RRGaitPosX, RRPosZ+BodyPosZ+RRGaitPosZ,RRPosY+BodyPosY+RRGaitPosY, (signed int)RROffsetX, (signed int)RROffsetZ, (signed int)RRGaitRotY);
-		LegIK(RRPosX-BodyPosX+BodyIKPosX-RRGaitPosX, RRPosY+BodyPosY-BodyIKPosY+RRGaitPosY, RRPosZ+BodyPosZ-BodyIKPosZ+RRGaitPosZ);
-		RRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
-		RRFemurAngle = IKFemurAngle;
-		RRTibiaAngle = IKTibiaAngle;
-
-		//Left Front leg
-		BodyIK(LFPosX-BodyPosX+LFGaitPosX, LFPosZ+BodyPosZ+LFGaitPosZ,LFPosY+BodyPosY+LFGaitPosY, (signed int)LFOffsetX, (signed int)LFOffsetZ, (signed int)LFGaitRotY);
-		LegIK(LFPosX+BodyPosX-BodyIKPosX+LFGaitPosX, LFPosY+BodyPosY-BodyIKPosY+LFGaitPosY, LFPosZ+BodyPosZ-BodyIKPosZ+LFGaitPosZ);
-		LFCoxaAngle  = IKCoxaAngle + CoxaAngle; //Angle for the basic setup for the front leg   
-		LFFemurAngle = IKFemurAngle;
-		LFTibiaAngle = IKTibiaAngle;
-
-		//Left Middle leg
-		BodyIK(LMPosX-BodyPosX+LMGaitPosX, LMPosZ+BodyPosZ+LMGaitPosZ,LMPosY+BodyPosY+LMGaitPosY, (signed int)LMOffsetX, (signed int)LMOffsetZ, (signed int)LMGaitRotY);
-		LegIK(LMPosX+BodyPosX-BodyIKPosX+LMGaitPosX, LMPosY+BodyPosY-BodyIKPosY+LMGaitPosY, LMPosZ+BodyPosZ-BodyIKPosZ+LMGaitPosZ);
-		LMCoxaAngle  = IKCoxaAngle;
-		LMFemurAngle = IKFemurAngle;
-		LMTibiaAngle = IKTibiaAngle;
-
-		//Left Rear leg
-		BodyIK(LRPosX-BodyPosX+LRGaitPosX, LRPosZ+BodyPosZ+LRGaitPosZ,LRPosY+BodyPosY+LRGaitPosY, (signed int)LROffsetX, (signed int)LROffsetZ, (signed int)LRGaitRotY);
-		LegIK(LRPosX+BodyPosX-BodyIKPosX+LRGaitPosX, LRPosY+BodyPosY-BodyIKPosY+LRGaitPosY, LRPosZ+BodyPosZ-BodyIKPosZ+LRGaitPosZ);
-		LRCoxaAngle  = IKCoxaAngle - CoxaAngle; //Angle for the basic setup for the front leg   
-		LRFemurAngle = IKFemurAngle;
-		LRTibiaAngle = IKTibiaAngle;
-		*/
-		/*
-		   CheckAngles();
-		   putchar('Q');
-		   putchar(13);
-		   timeout_end = 0;
-		   while( getchar() != '.' ){
-		   timeout_end++;
-		   if( timeout_end > 400 )
-		   break;
-		   delay_ms(5);
-		   putchar('Q');
-		   putchar(13);
-		   }
-		 */ 
-
-		printf("us_sensor_distance_front %i | us_sensor_distance_left %i | us_sensor_distance_right %i \n", us_sensor_distance_front, us_sensor_distance_left, us_sensor_distance_right);
+		//printf("us_sensor_distance_front %i | us_sensor_distance_left %i | us_sensor_distance_right %i \n", us_sensor_distance_front, us_sensor_distance_left, us_sensor_distance_right);
+		
+		read_IMU();
+		
+		// process_AI();
 
 		for(wait_counter = 0; wait_counter < 10; wait_counter++) {
 			usleep(ActualGaitSpeed*100);
-	
-			gettimeofday( &now, NULL );
-
-			process_AI();
-/*
-			if ( TravelLengthZ < 0) {
-				// TravelLengthZ = 0;
-				//look_around();
-				printf("Check result = %i\n", check_sensors());
-				switch(check_sensors()) {
-					case 0 :
-						// Nothing
-						break;
-					case 1 :
-						TravelLengthZ = 0;
-						look_around();
-						find_where_to_turn(1);
-						gettimeofday( &timebeforenextcheck, NULL );
-                                                break;
-					case 2 :
-						choose_direction_to_avoid_item(0);
-                                                break;
-					case 3 :
-						choose_direction_to_avoid_item(1);
-                                                break;
-					case 4 :
-						choose_direction_to_avoid_item(0);
-                                                break;
-					case 5 :
-						choose_direction_to_avoid_item(1);
-                                                break;
-					default :
-						
-						break;
-				}
-			}
-*/
-
 		}
 		if(sleeping == 0){
 			ServoDriver();
+			
+			if(TravelLengthZ < 0) {
+				gettimeofday( &now, NULL );
+
+				timediff = timeval_difference( &timebeforenextcheck, &now);
+
+				if( is_greater_than( &timediff, &time1sec ) == 1 ) {
+					process_AI();
+					gettimeofday( &timebeforenextcheck, NULL );
+				}
+			}
 		}
 		else {
 			TravelRotationY=0;

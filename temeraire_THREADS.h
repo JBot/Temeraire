@@ -2,7 +2,6 @@
 #include "temeraire.h"
 #include "temeraire_var.h"
 #include "temeraire_GAIT.h"
-#include "temeraire_IK.h"
 #include "temeraire_UTILS.h"
 
 #ifndef TEMERAIRE_THREADS_H
@@ -17,5 +16,7 @@ void getInput(void);
 // Threads
 void *thread_adc_battery(void *arg);
 void *thread_i2c_ultrasound(void *args);
+
+void read_IMU(void);
 
 #endif

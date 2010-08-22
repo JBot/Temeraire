@@ -229,6 +229,8 @@ int ser_fd_ssc;
 struct termios oldtio_ssc, newtio_ssc;
 int ser_fd_modem;
 struct termios oldtio_modem, newtio_modem;
+int ser_fd_imu;
+struct termios oldtio_imu, newtio_imu;
 
 char wait_command_flag = 1;
 char modem_command;
@@ -315,3 +317,20 @@ struct adc_channel channels[] = {
 };
 
 struct robot_state temeraire_state = { NOTHING };
+
+struct timeval timebeforenextcheck;
+
+// IMU
+float global_pitch = 3;
+float global_roll = 12;
+
+signed int LRGaitPosY_adapt = 0;
+signed int LMGaitPosY_adapt = 0;
+signed int LFGaitPosY_adapt = 0;
+signed int RRGaitPosY_adapt = 0;
+signed int RMGaitPosY_adapt = 0;
+signed int RFGaitPosY_adapt = 0;
+
+
+
+

@@ -234,6 +234,8 @@ extern int ser_fd_ssc;
 extern struct termios oldtio_ssc, newtio_ssc;
 extern int ser_fd_modem;
 extern struct termios oldtio_modem, newtio_modem;
+extern int ser_fd_imu;
+extern struct termios oldtio_imu, newtio_imu;
 
 extern char wait_command_flag;
 extern char modem_command;
@@ -282,5 +284,19 @@ struct robot_state {
 
 };
 extern struct robot_state temeraire_state;
+extern struct timeval timebeforenextcheck;
+
+// IMU
+extern float global_pitch;
+extern float global_roll;
+
+extern signed int LRGaitPosY_adapt;
+extern signed int LMGaitPosY_adapt;
+extern signed int LFGaitPosY_adapt;
+extern signed int RRGaitPosY_adapt;
+extern signed int RMGaitPosY_adapt;
+extern signed int RFGaitPosY_adapt;
+
+
 
 #endif

@@ -15,6 +15,7 @@ void GetBoogTan(float BoogTanX, float BoogTanY);
 void ServoDriver(void);
 void FreeServos();
 void adapt_height(void);
+void adapt_pitch_roll(void);
 
 inline struct timeval timeval_difference( struct timeval* first, struct timeval* second );
 inline int is_greater_than( struct timeval* first, struct timeval* second );

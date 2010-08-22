@@ -290,6 +290,7 @@ void *getInput(void *args) {
 
 								break;
 							case 'I' : // GaitSpeed
+								read_IMU(); // test
 								if( leg_sensor_ON == 1 ) 
 									NomGaitSpeed = temp_input;
 								else 
@@ -330,14 +331,14 @@ void *getInput(void *args) {
 							case 'S' : // Speak
 								Serout[i++]='\0';
 								//printf("%s",Serout);
-								sprintf(speak_buff,"espeak -v fr \"%s\" &",Serout);
+								sprintf(speak_buff,"espeak -a 200 -v fr \"%s\" &",Serout);
 								system(speak_buff);
 								i = 0;
 								break;
 							case 's' :
 								Serout[i++]='\0';
 								//printf("%s",Serout);
-								sprintf(speak_buff,"espeak -v en \"%s\" &",Serout);
+								sprintf(speak_buff,"espeak -a 200 -v en \"%s\" &",Serout);
 								system(speak_buff);
 								i = 0;
 								break;
@@ -553,4 +554,51 @@ void getInput(void) {
 }
 #endif
 
+void read_IMU(void) {
 
+	char my_input[50];
+        char read_flag;
+        char Serout[260]={0};
+        int i=0;
+	int16_t roll, pitch; 
+	float roll_f, pitch_f;
+
+
+	// Requesting DATA
+	//printf("BEFORE WRITE \n");
+	sprintf(Serout, "snp%c%c%c%c", (char)0x01, (char)0x00, (char)0x01, (char)0x52);
+	//printf("BEFORE WRITE \n");
+        // write to serial if connected
+        if ( ser_fd_imu )
+                write(ser_fd_imu, &Serout, sizeof(Serout));
+	//printf("AFTER WRITE \n");
+	usleep(50000);
+	//printf("AFTER SLEEP \n");
+
+	// 13 datas a récuperer
+
+	read_flag = read(ser_fd_imu, my_input, 13);
+	//printf("AFTER READ \n");
+	if( (read_flag != 0) && (my_input[0] != 0) ) {
+
+		if(read_flag == -1){
+			printf("!!!! IMU Reading error. !!!!");
+		}
+		else {
+			//modem_command = my_input[0];
+			//printf("!!!! IMU READ OK !!!!\n");
+
+			roll = (((int8_t) my_input[7]) << 8) + my_input[8];
+			roll_f = roll * 0.0109863;
+			pitch = (((int8_t) my_input[9]) << 8) + my_input[10];
+			pitch_f = pitch * 0.0109863;
+
+			global_roll = roll_f;
+			global_pitch = pitch_f;
+
+			//printf("DATAS : %c%c%c %x %x %x%x %x%x %x%x %x%x \n", my_input[0], my_input[1], my_input[2], my_input[3], my_input[4], my_input[5], my_input[6], my_input[7], my_input[8], my_input[9], my_input[10], my_input[11], my_input[12] );
+			printf("DATAS : %c%c%c %x %x %x%x %f %f %x%x \n", my_input[0], my_input[1], my_input[2], my_input[3], my_input[4], my_input[5], my_input[6], roll_f, pitch_f, my_input[11], my_input[12] );
+		}
+	}
+
+}

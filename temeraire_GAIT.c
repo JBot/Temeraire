@@ -513,31 +513,31 @@ void GaitSeq(void) {
 	Gait(LRGaitLegNr, LRGaitPosX, LRGaitPosY, LRGaitPosZ, LRGaitRotY);
 
 	LRGaitPosX = GaitPosX;
-	LRGaitPosY = GaitPosY;
+	LRGaitPosY = GaitPosY + LRGaitPosY_adapt;
 	LRGaitPosZ = GaitPosZ;
 	LRGaitRotY = GaitRotY;   
 
 	Gait(RFGaitLegNr, RFGaitPosX, RFGaitPosY, RFGaitPosZ, RFGaitRotY);
 	RFGaitPosX = GaitPosX;
-	RFGaitPosY = GaitPosY;
+	RFGaitPosY = GaitPosY + RFGaitPosY_adapt;
 	RFGaitPosZ = GaitPosZ;
 	RFGaitRotY = GaitRotY;
 
 	Gait(LMGaitLegNr, LMGaitPosX, LMGaitPosY, LMGaitPosZ, LMGaitRotY);
 	LMGaitPosX = GaitPosX;
-	LMGaitPosY = GaitPosY;
+	LMGaitPosY = GaitPosY + LMGaitPosY_adapt;
 	LMGaitPosZ = GaitPosZ;
 	LMGaitRotY = GaitRotY;   
 
 	Gait(RRGaitLegNr, RRGaitPosX, RRGaitPosY, RRGaitPosZ, RRGaitRotY);
 	RRGaitPosX = GaitPosX;
-	RRGaitPosY = GaitPosY;
+	RRGaitPosY = GaitPosY + RRGaitPosY_adapt;
 	RRGaitPosZ = GaitPosZ;
 	RRGaitRotY = GaitRotY;   
 
 	Gait(LFGaitLegNr, LFGaitPosX, LFGaitPosY, LFGaitPosZ, LFGaitRotY);
 	LFGaitPosX = GaitPosX;
-	LFGaitPosY = GaitPosY;
+	LFGaitPosY = GaitPosY + LFGaitPosY_adapt;
 	LFGaitPosZ = GaitPosZ;
 	LFGaitRotY = GaitRotY;   
 	//printf("LFGaitPosY = %d \n",LFGaitPosY);  
@@ -545,7 +545,7 @@ void GaitSeq(void) {
 	LastLeg = TRUE;
 	Gait(RMGaitLegNr, RMGaitPosX, RMGaitPosY, RMGaitPosZ, RMGaitRotY);
 	RMGaitPosX = GaitPosX;
-	RMGaitPosY = GaitPosY;
+	RMGaitPosY = GaitPosY + RMGaitPosY_adapt;
 	RMGaitPosZ = GaitPosZ;
 	RMGaitRotY = GaitRotY;
 
